@@ -78,6 +78,28 @@
     });
   });
 
+  /* ---- Hero Scroll — instant 3D → video switch ---- */
+  const heroCanvas = document.getElementById('cv');
+  const heroVid    = document.querySelector('.hvid');
+  if(heroCanvas && heroVid){
+    heroCanvas.style.transition = 'opacity .35s ease';
+    heroVid.style.transition    = 'opacity .35s ease, transform .35s ease';
+    let revealed = false;
+    window.addEventListener('scroll', ()=>{
+      if(window.scrollY > 40 && !revealed){
+        revealed = true;
+        heroCanvas.style.opacity = '0';
+        heroVid.style.opacity    = '1';
+        heroVid.style.transform  = 'scale(1.06)';
+      } else if(window.scrollY <= 40 && revealed){
+        revealed = false;
+        heroCanvas.style.opacity = '1';
+        heroVid.style.opacity    = '0.18';
+        heroVid.style.transform  = 'scale(1)';
+      }
+    }, { passive: true });
+  }
+
   /* ---- Mobile Nav ---- */
   const burger = document.querySelector('.nav-burger');
   const navOverlay = document.querySelector('.nav-overlay');
