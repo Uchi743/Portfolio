@@ -199,11 +199,14 @@ footer{border-top:1px solid rgba(240,237,230,.07);padding:2rem 5rem;display:flex
 .pdesc{padding:5rem 5rem;max-width:700px}
 .pdesc p{font-size:.95rem;line-height:1.95;color:rgba(240,237,230,.58);font-weight:300;border-left:1px solid rgba(240,237,230,.12);padding-left:2rem}
 
-/* Project Gallery */
-.pgallery{padding:0 5rem 5rem}
-.pg-full{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;margin-bottom:3px}
-.pg-row{display:grid;grid-template-columns:1fr 1fr;gap:3px}
-.pg-row img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+/* Project Gallery — natural dimensions, Adobe Portfolio style */
+.pgallery{padding:0 0 8rem}
+.pg-img{width:100%;height:auto;display:block}
+.pg-row{display:grid;gap:4px}
+.pg-row--2{grid-template-columns:1fr 1fr}
+.pg-row--3{grid-template-columns:1fr 1fr 1fr}
+.pg-row img{width:100%;height:auto;display:block}
+.pg-spacer{height:4px}
 
 /* Behance button */
 .behance-btn{
@@ -302,8 +305,8 @@ footer{border-top:1px solid rgba(240,237,230,.07);padding:2rem 5rem;display:flex
   .ph-cover{height:50vh}
   .pinfo{grid-template-columns:1fr 1fr;padding:1.5rem;gap:1.5rem}
   .pdesc{padding:3rem 1.5rem}
-  .pgallery{padding:0 1.5rem 3rem}
-  .pg-full{aspect-ratio:4/3}
+  .pgallery{padding:0 0 4rem}
+  .pg-row--2,.pg-row--3{grid-template-columns:1fr}
   .pnav{padding:2rem 1.5rem;flex-wrap:wrap;justify-content:center}
   .pnav-sep{display:none}
   .behance-btn{margin:0 1.5rem 3rem}

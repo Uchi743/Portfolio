@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Léo Demont — Motion Designer & 3D Artist</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--black:#080808;--white:#f0ede6;--mid:#1a1a1a;--gray:#555;--bebas:'Bebas Neue',sans-serif;--dm:'DM Sans',sans-serif}
+html{scroll-behavior:smooth;cursor:none}
+body{background:var(--black);color:var(--white);font-family:var(--dm);overflow-x:hidden}
+
+#cur{position:fixed;width:6px;height:6px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cur-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(240,237,230,0.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .25s}
+body.h #cur-ring{width:52px;height:52px;border-color:rgba(240,237,230,0.9)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:2.2rem 5rem;mix-blend-mode:difference}
+.nl{font-family:var(--bebas);font-size:1.3rem;letter-spacing:.18em;color:var(--white);text-decoration:none}
+.nr{display:flex;gap:2.5rem;list-style:none}
+.nr a{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--white);text-decoration:none;opacity:.6;transition:opacity .3s}
+.nr a:hover{opacity:1}
+
+#hero{position:relative;width:100%;height:100vh;display:flex;align-items:flex-end;overflow:hidden;background:var(--black)}
+#cv{position:absolute;inset:0;z-index:0}
+.hvw{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center}
+.hvid{width:100%;height:100%;object-fit:cover;opacity:.3}
+.hph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 50%,#1c1c1c 0%,#080808 70%);color:rgba(240,237,230,.12);font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;flex-direction:column;gap:1rem}
+.hph svg{opacity:.15;width:48px}
+.hc{position:relative;z-index:3;padding:0 5rem 5rem;width:100%;display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:4rem}
+.heb{font-size:.65rem;letter-spacing:.4em;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:1.8rem;display:flex;align-items:center;gap:1.2rem}
+.heb::before{content:'';display:block;width:32px;height:1px;background:rgba(240,237,230,.3)}
+.ht{font-family:var(--bebas);font-size:clamp(5.5rem,13vw,14rem);line-height:.88;letter-spacing:.025em}
+.ht em{font-family:var(--dm);font-weight:300;font-style:italic;font-size:clamp(2rem,4.5vw,5rem);letter-spacing:.06em;opacity:.5;display:block;margin-bottom:.6rem}
+.hr{text-align:right}
+.hd{font-size:.82rem;line-height:1.8;color:rgba(240,237,230,.5);font-weight:300;max-width:260px;margin-left:auto;margin-bottom:2.5rem}
+.hs{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(240,237,230,.3);display:flex;align-items:center;gap:.8rem;justify-content:flex-end}
+.sl{width:50px;height:1px;background:rgba(240,237,230,.2);overflow:hidden;position:relative}
+.sl::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:var(--white);animation:sc 2.2s infinite ease-in-out}
+@keyframes sc{0%{left:-100%}100%{left:100%}}
+
+#work{padding:9rem 5rem}
+.slb{font-size:.62rem;letter-spacing:.38em;text-transform:uppercase;color:rgba(240,237,230,.3);margin-bottom:4rem;display:flex;align-items:center;gap:2rem}
+.slb::after{content:'';flex:1;height:1px;background:rgba(240,237,230,.08)}
+.pgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.pi{position:relative;overflow:hidden;background:var(--mid);cursor:pointer}
+.pi:nth-child(1){grid-column:span 7;aspect-ratio:16/9}
+.pi:nth-child(2){grid-column:span 5;aspect-ratio:4/5}
+.pi:nth-child(3){grid-column:span 4;aspect-ratio:4/5}
+.pi:nth-child(4){grid-column:span 4;aspect-ratio:4/5}
+.pi:nth-child(5){grid-column:span 4;aspect-ratio:4/5}
+.pi:nth-child(6){grid-column:span 8;aspect-ratio:16/9}
+.pi:nth-child(7){grid-column:span 4;aspect-ratio:4/5}
+.pi:nth-child(8){grid-column:span 5;aspect-ratio:16/10}
+.pi:nth-child(9){grid-column:span 7;aspect-ratio:16/10}
+.pi:nth-child(10){grid-column:span 12;aspect-ratio:21/6}
+.pc{width:100%;height:100%;object-fit:cover;transition:transform .9s cubic-bezier(.16,1,.3,1);filter:grayscale(25%)}
+.pi:hover .pc{transform:scale(1.07);filter:grayscale(0%)}
+.po{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.1) 55%,transparent 100%);opacity:0;transition:opacity .4s;display:flex;flex-direction:column;justify-content:flex-end;padding:2rem}
+.pi:hover .po{opacity:1}
+.ptags{display:flex;gap:.4rem;margin-bottom:.7rem;flex-wrap:wrap}
+.ptag{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;border:1px solid rgba(240,237,230,.35);padding:.18rem .55rem;color:rgba(240,237,230,.65)}
+.pn{font-family:var(--bebas);font-size:1.5rem;letter-spacing:.04em;line-height:1;margin-bottom:.25rem}
+.py{font-size:.6rem;color:rgba(240,237,230,.35);letter-spacing:.15em}
+.pli{position:absolute;top:1.2rem;right:1.2rem;width:30px;height:30px;border:1px solid rgba(240,237,230,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;font-size:.75rem;color:var(--white)}
+.pi:hover .pli{opacity:1}
+.pnum{position:absolute;top:1.2rem;left:1.5rem;font-family:var(--bebas);font-size:.8rem;letter-spacing:.1em;color:rgba(240,237,230,.2);opacity:0;transition:opacity .3s}
+.pi:hover .pnum{opacity:1}
+
+#about{padding:10rem 5rem;display:grid;grid-template-columns:5fr 7fr;gap:10rem;align-items:start}
+.al .bt{font-family:var(--bebas);font-size:clamp(4rem,8vw,9.5rem);line-height:.88;letter-spacing:.02em;margin-bottom:3.5rem}
+.al .bt em{font-family:var(--dm);font-weight:300;font-style:italic;font-size:.52em;opacity:.45;display:block;margin-bottom:.4rem;letter-spacing:.07em}
+.astat{border-top:1px solid rgba(240,237,230,.08);padding:1.5rem 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem}
+.asn{font-family:var(--bebas);font-size:2.2rem;letter-spacing:.03em;color:var(--white);margin-bottom:.2rem}
+.asl{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.3)}
+.ar{padding-top:1.5rem}
+.abio{font-size:.95rem;line-height:1.95;color:rgba(240,237,230,.58);font-weight:300;margin-bottom:3.5rem;border-left:1px solid rgba(240,237,230,.12);padding-left:2rem}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid rgba(240,237,230,.08)}
+.sr{border-bottom:1px solid rgba(240,237,230,.08);padding:1.1rem 0;display:flex;justify-content:space-between;align-items:center}
+.sn{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.75)}
+.slv{font-size:.6rem;letter-spacing:.12em;color:rgba(240,237,230,.25)}
+.sdiv{border-right:1px solid rgba(240,237,230,.08);padding-right:2rem;margin-right:2rem}
+
+#bh{padding:5rem 5rem 10rem}
+.bhg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(240,237,230,.05)}
+.bhc{background:var(--black);padding:2rem;transition:background .3s;cursor:pointer;text-decoration:none;color:inherit;display:block}
+.bhc:hover{background:#111}
+.bht{width:100%;aspect-ratio:4/3;object-fit:cover;margin-bottom:1.5rem;filter:grayscale(35%);transition:filter .4s}
+.bhc:hover .bht{filter:grayscale(0%)}
+.bhtag{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(240,237,230,.3);margin-bottom:.7rem;display:block}
+.bhn{font-family:var(--bebas);font-size:1.1rem;letter-spacing:.04em;margin-bottom:.3rem;line-height:1.1}
+.bhap{font-size:.6rem;color:rgba(240,237,230,.25);letter-spacing:.1em;display:flex;gap:1rem;align-items:center}
+.bhap span{color:rgba(240,237,230,.5)}
+
+#contact{padding:12rem 5rem 8rem;text-align:center;position:relative;overflow:hidden}
+.cbg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--bebas);font-size:clamp(5rem,20vw,22rem);color:rgba(240,237,230,.025);letter-spacing:.05em;pointer-events:none;user-select:none;white-space:nowrap}
+.cl{font-size:.62rem;letter-spacing:.42em;text-transform:uppercase;color:rgba(240,237,230,.3);margin-bottom:2rem}
+.ct{font-family:var(--bebas);font-size:clamp(3.5rem,10vw,11rem);letter-spacing:.02em;line-height:.88;margin-bottom:4.5rem;position:relative}
+.ct em{font-family:var(--dm);font-weight:300;font-style:italic;opacity:.45;font-size:.45em;display:block;letter-spacing:.1em;margin-bottom:.5rem}
+.ce{font-size:clamp(.9rem,2.2vw,1.8rem);color:rgba(240,237,230,.65);font-weight:300;text-decoration:none;border-bottom:1px solid rgba(240,237,230,.18);padding-bottom:.25rem;transition:color .3s,border-color .3s;display:inline-block;margin-bottom:4rem}
+.ce:hover{color:var(--white);border-color:var(--white)}
+.clinks{display:flex;justify-content:center;gap:3.5rem;flex-wrap:wrap}
+.clink{font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:rgba(240,237,230,.35);text-decoration:none;transition:color .3s;border-bottom:1px solid transparent;padding-bottom:2px}
+.clink:hover{color:var(--white);border-color:rgba(240,237,230,.3)}
+
+footer{border-top:1px solid rgba(240,237,230,.07);padding:2rem 5rem;display:flex;justify-content:space-between;align-items:center}
+.ft{font-size:.6rem;letter-spacing:.15em;color:rgba(240,237,230,.2);text-transform:uppercase}
+
+.rv{opacity:0;transform:translateY(36px);transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1)}
+.rv.vis{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-ring"></div>
+
+<nav>
+  <a href="#hero" class="nl">Léo Demont</a>
+  <ul class="nr">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#bh">Behance</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <canvas id="cv"></canvas>
+  <div class="hvw">
+    <div class="hph">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="10" width="40" height="28" rx="2" stroke="white" stroke-width="1.5"/><path d="M20 18l8 6-8 6V18z" fill="white"/></svg>
+      Remplace par ta vidéo reel — src="assets/reel.mp4"
+    </div>
+  </div>
+  <div class="hc">
+    <div>
+      <div class="heb">Motion Designer & 3D Artist — Paris, France</div>
+      <h1 class="ht"><em>Léo</em>DEMONT</h1>
+    </div>
+    <div class="hr">
+      <p class="hd">Cinematic motion & immersive 3D — crafted for brands that leave a mark.</p>
+      <div class="hs"><span class="sl"></span> Scroll</div>
+    </div>
+  </div>
+</section>
+
+<section id="work">
+  <div class="slb rv">Selected Work — 2023–2025</div>
+  <div class="pgrid">
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/196098211/BOOBA-3D-MODELING','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/b39818196098211.Y3JvcCwxMjAwLDkzOCwwLDI5.png" alt="Booba 3D">
+      <div class="po"><div class="ptags"><span class="ptag">3D Art</span><span class="ptag">Character Design</span></div><div class="pn">Booba — 3D Modeling</div><div class="py">2024</div></div>
+      <div class="pli">↗</div><div class="pnum">01</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/226264591/THERMOS-MOTION-3D','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/27d693226264591.Y3JvcCwxMzgwLDEwODAsMjcwLDA.gif" alt="Thermos">
+      <div class="po"><div class="ptags"><span class="ptag">3D Motion</span></div><div class="pn">Thermos Motion 3D</div><div class="py">2025</div></div>
+      <div class="pli">↗</div><div class="pnum">02</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/190605083/PRADA-MONOLITH-3D-MODELING','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/41afa9190605083.Y3JvcCwxMTQ1LDg5NiwxMjcsMjUy.jpg" alt="Prada">
+      <div class="po"><div class="ptags"><span class="ptag">Fashion</span><span class="ptag">Product Design</span></div><div class="pn">Prada Monolith 3D</div><div class="py">2024</div></div>
+      <div class="pli">↗</div><div class="pnum">03</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/161626219/NUIT-et-JOUR','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/3c20c6161626219.Y3JvcCwxMDA4LDc4OSwxOTQsMA.png" alt="Nuit et Jour">
+      <div class="po"><div class="ptags"><span class="ptag">3D Art</span><span class="ptag">Motion</span></div><div class="pn">Nuit et Jour</div><div class="py">2023</div></div>
+      <div class="pli">↗</div><div class="pnum">04</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/78467845/YouTube-THUMBNAILS','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/db37dc78467845.Y3JvcCwxMzgwLDEwODAsMjczLDA.jpg" alt="YouTube Thumbnails">
+      <div class="po"><div class="ptags"><span class="ptag">2D Design</span><span class="ptag">Thumbnails</span></div><div class="pn">YouTube Thumbnails</div><div class="py">2023</div></div>
+      <div class="pli">↗</div><div class="pnum">05</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/196371065/Capsule-Corp-3D','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/73a695196371065.Y3JvcCwxNDE3LDExMDksNTQwLDA.png" alt="Capsule Corp">
+      <div class="po"><div class="ptags"><span class="ptag">3D Art</span><span class="ptag">3D Modeling</span></div><div class="pn">Capsule Corp 3D</div><div class="py">2024</div></div>
+      <div class="pli">↗</div><div class="pnum">06</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/195428127/3D-KAME-HOUSE','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/4ee2c3195428127.Y3JvcCw4NjIsNjc1LDE2OCww.gif" alt="Kame House">
+      <div class="po"><div class="ptags"><span class="ptag">3D Motion</span><span class="ptag">3D Art</span></div><div class="pn">3D Kame House</div><div class="py">2024</div></div>
+      <div class="pli">↗</div><div class="pnum">07</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/181387047/VIVIENNE-WESTWOOD-PEARL-DROP-BOUCLES-DOREILLES','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/899d9e181387047.Y3JvcCwxNDAwLDEwOTUsMCwxNTI.jpg" alt="Vivienne Westwood">
+      <div class="po"><div class="ptags"><span class="ptag">3D Motion</span><span class="ptag">Fashion</span></div><div class="pn">Vivienne Westwood Pearl Drop</div><div class="py">2023</div></div>
+      <div class="pli">↗</div><div class="pnum">08</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/181384857/LOUIS-VUITTON-FASHION-DIGITAL-CONCEPT','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/1fefc2181384857.Y3JvcCw0MDk2LDMyMDMsMCw0NDY.jpg" alt="Louis Vuitton">
+      <div class="po"><div class="ptags"><span class="ptag">Fashion</span><span class="ptag">Digital Concept</span></div><div class="pn">Louis Vuitton Fashion Digital</div><div class="py">2023</div></div>
+      <div class="pli">↗</div><div class="pnum">09</div>
+    </div>
+    <div class="pi rv" onclick="window.open('https://www.behance.net/gallery/181384309/TRAVIS-SCOTT-3D','_blank')">
+      <img class="pc" src="https://mir-s3-cdn-cf.behance.net/projects/404/4df606181384309.Y3JvcCwyMTYwLDE2ODksMCw2NDY.jpg" alt="Travis Scott">
+      <div class="po"><div class="ptags"><span class="ptag">3D Modeling</span><span class="ptag">Character</span></div><div class="pn">Travis Scott 3D</div><div class="py">2023</div></div>
+      <div class="pli">↗</div><div class="pnum">10</div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="al rv">
+    <div class="bt"><em>Motion &</em>3D<br>ARTIST</div>
+    <div class="astat">
+      <div><div class="asn">24K</div><div class="asl">Project Views</div></div>
+      <div><div class="asn">610</div><div class="asl">Appreciations</div></div>
+      <div><div class="asn">541</div><div class="asl">Followers</div></div>
+    </div>
+  </div>
+  <div class="ar rv">
+    <p class="abio">Motion designer et artiste 3D basé à Paris, je crée des expériences visuelles cinématographiques à l'intersection du luxe, de la technologie et du storytelling. Du produit animé au cinématique CGI complet — je travaille avec des marques qui veulent marquer les esprits.</p>
+    <div class="sgrid">
+      <div class="sdiv">
+        <div class="sr"><span class="sn">Cinema 4D</span><span class="slv">Expert</span></div>
+        <div class="sr"><span class="sn">Blender</span><span class="slv">Expert</span></div>
+        <div class="sr"><span class="sn">Unreal Engine 5</span><span class="slv">Advanced</span></div>
+        <div class="sr"><span class="sn">After Effects</span><span class="slv">Expert</span></div>
+      </div>
+      <div>
+        <div class="sr"><span class="sn">3D Modeling</span><span class="slv">Expert</span></div>
+        <div class="sr"><span class="sn">Motion Design</span><span class="slv">Expert</span></div>
+        <div class="sr"><span class="sn">AI / Kling</span><span class="slv">Advanced</span></div>
+        <div class="sr"><span class="sn">Compositing</span><span class="slv">Advanced</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="bh">
+  <div class="slb rv">Behance — behance.net/PrismUchi</div>
+  <div class="bhg">
+    <a class="bhc rv" href="https://www.behance.net/gallery/181384695/3D-MODEL-RAP-FASHION-DIGITAL" target="_blank">
+      <img class="bht" src="https://mir-s3-cdn-cf.behance.net/projects/404/b84a40181384695.658828dec33cc.jpg" alt="3D Rap Fashion">
+      <span class="bhtag">3D Art · Fashion</span>
+      <div class="bhn">3D Model Rap Fashion Digital</div>
+      <div class="bhap">2023 <span>131 vues</span> <span>9 ❤</span></div>
+    </a>
+    <a class="bhc rv" href="https://www.behance.net/gallery/196098211/BOOBA-3D-MODELING" target="_blank">
+      <img class="bht" src="https://mir-s3-cdn-cf.behance.net/projects/404/b39818196098211.Y3JvcCwxMjAwLDkzOCwwLDI5.png" alt="Booba">
+      <span class="bhtag">3D Art · Character</span>
+      <div class="bhn">Booba — 3D Modeling</div>
+      <div class="bhap">2024 <span>2.3K vues</span> <span>33 ❤</span></div>
+    </a>
+    <a class="bhc rv" href="https://www.behance.net/gallery/78467845/YouTube-THUMBNAILS" target="_blank">
+      <img class="bht" src="https://mir-s3-cdn-cf.behance.net/projects/404/db37dc78467845.Y3JvcCwxMzgwLDEwODAsMjczLDA.jpg" alt="Thumbnails">
+      <span class="bhtag">2D · Graphic Design</span>
+      <div class="bhn">YouTube Thumbnails</div>
+      <div class="bhap">2023 <span>3.1K vues</span> <span>105 ❤</span></div>
+    </a>
+    <a class="bhc rv" href="https://www.behance.net/gallery/181384309/TRAVIS-SCOTT-3D" target="_blank">
+      <img class="bht" src="https://mir-s3-cdn-cf.behance.net/projects/404/4df606181384309.Y3JvcCwyMTYwLDE2ODksMCw2NDY.jpg" alt="Travis Scott">
+      <span class="bhtag">3D · Character</span>
+      <div class="bhn">Travis Scott 3D</div>
+      <div class="bhap">2023 <span>161 vues</span> <span>9 ❤</span></div>
+    </a>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="cbg">WORK</div>
+  <div class="cl rv">Available for freelance</div>
+  <h2 class="ct rv"><em>Let's create</em>SOMETHING<br>GREAT</h2>
+  <a href="mailto:hello@leodemont.fr" class="ce rv">hello@leodemont.fr</a>
+  <div class="clinks rv">
+    <a href="https://www.behance.net/PrismUchi" target="_blank" class="clink">Behance</a>
+    <a href="https://leodemont1.myportfolio.com" target="_blank" class="clink">Portfolio</a>
+    <a href="http://twitter.com/hisokaadesgin" target="_blank" class="clink">Twitter</a>
+    <a href="#" class="clink">LinkedIn</a>
+    <a href="#" class="clink">Instagram</a>
+  </div>
+</section>
+
+<footer>
+  <span class="ft">© 2025 Léo Demont — Uchi Design</span>
+  <span class="ft">Motion Designer & 3D Artist — Paris</span>
+</footer>
+
+<script>
+const cur=document.getElementById('cur'),ring=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function ar(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(ar)})();
+document.querySelectorAll('a,button,.pi,.bhc').forEach(el=>{el.addEventListener('mouseenter',()=>document.body.classList.add('h'));el.addEventListener('mouseleave',()=>document.body.classList.remove('h'))});
+
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('cv'),alpha:true,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,100);
+cam.position.z=5;
+
+const g1=new THREE.IcosahedronGeometry(1.6,1);
+const m1=new THREE.MeshStandardMaterial({color:0xffffff,wireframe:true,opacity:.06,transparent:true});
+const mesh=new THREE.Mesh(g1,m1);
+scene.add(mesh);
+
+const pts=[];
+for(let i=0;i<200;i++){
+  const theta=Math.random()*Math.PI*2,phi=Math.acos(2*Math.random()-1),r=2.8+Math.random()*.4;
+  pts.push(Math.sin(phi)*Math.cos(theta)*r,Math.sin(phi)*Math.sin(theta)*r,Math.cos(phi)*r);
+}
+const pg=new THREE.BufferGeometry();
+pg.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+const pm=new THREE.PointsMaterial({color:0xffffff,size:.03,opacity:.4,transparent:true});
+const points=new THREE.Points(pg,pm);
+scene.add(points);
+
+const tg=new THREE.TorusGeometry(2.4,.004,8,100);
+const tm=new THREE.MeshBasicMaterial({color:0xffffff,opacity:.04,transparent:true});
+const torus=new THREE.Mesh(tg,tm);
+torus.rotation.x=Math.PI/4;
+scene.add(torus);
+
+scene.add(new THREE.AmbientLight(0xffffff,.4));
+const pl=new THREE.PointLight(0xffffff,1,12);pl.position.set(4,4,4);scene.add(pl);
+
+let tx=0,ty=0;
+document.addEventListener('mousemove',e=>{tx=(e.clientX/innerWidth-.5)*.6;ty=(e.clientY/innerHeight-.5)*.4});
+(function anim(){requestAnimationFrame(anim);mesh.rotation.y+=.0025;mesh.rotation.x+=.001;torus.rotation.z+=.0018;points.rotation.y-=.001;mesh.rotation.y+=(tx-mesh.rotation.y)*.015;mesh.rotation.x+=(ty-mesh.rotation.x)*.015;renderer.render(scene,cam)})();
+window.addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}})},{threshold:.08,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.rv').forEach((el,i)=>{el.style.transitionDelay=(i%5)*.07+'s';obs.observe(el)});
+</script>
+</body>
+</html>
