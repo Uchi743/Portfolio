@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Léo Demont</title>
+<meta name="description" content="Contact Léo Demont — Motion Designer & 3D Artist basé à Paris. Available for freelance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="page-transition"></div>
+
+<div class="nav-overlay">
+  <button class="nav-overlay-close" aria-label="Fermer">✕</button>
+  <a href="index.html">Home</a>
+  <a href="index.html#work">Work</a>
+  <a href="about.html">About</a>
+  <a href="contact.html">Contact</a>
+</div>
+
+<nav>
+  <a href="index.html" class="nl">Léo Demont</a>
+  <ul class="nr">
+    <li><a href="index.html#work">Work</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <button class="nav-burger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section id="contact">
+  <div class="cbg">WORK</div>
+
+  <div class="cl rv">Available for freelance</div>
+  <h1 class="ct rv">LET'S CREATE<br>SOMETHING<br>GREAT</h1>
+  <a href="mailto:[MON EMAIL À REMPLACER]" class="ce rv">[MON EMAIL À REMPLACER]</a>
+
+  <div class="clinks rv">
+    <a href="https://www.behance.net/PrismUchi" target="_blank" class="clink">Behance</a>
+    <a href="http://twitter.com/hisokaadesgin" target="_blank" class="clink">Twitter</a>
+    <a href="#" class="clink">LinkedIn</a>
+    <a href="#" class="clink">Instagram</a>
+  </div>
+
+  <form class="cform rv" action="mailto:[MON EMAIL À REMPLACER]" method="POST" enctype="text/plain">
+    <div class="cfi">
+      <label for="name">Nom</label>
+      <input type="text" id="name" name="name" placeholder="Votre nom" autocomplete="name">
+    </div>
+    <div class="cfi">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" placeholder="votre@email.com" autocomplete="email">
+    </div>
+    <div class="cfi">
+      <label for="message">Message</label>
+      <textarea id="message" name="message" placeholder="Parlez-moi de votre projet..."></textarea>
+    </div>
+    <button type="submit" class="cbtn">Envoyer</button>
+  </form>
+</section>
+
+<footer>
+  <span class="ft">© 2025 Léo Demont — Uchi Design</span>
+  <span class="ft">Motion Designer & 3D Artist — Paris</span>
+</footer>
+
+<script src="js/main.js" defer></script>
+</body>
+</html>
