@@ -1,114 +1,283 @@
 /* ===================================================
-   main.js — Cursor, scroll reveal, page transitions, mobile nav
+   main.js — Cursor, scramble, smooth scroll, reveals
    =================================================== */
 
 (function(){
   'use strict';
 
-  /* ---- Custom Cursor (desktop only) ---- */
-  const isTouch = window.matchMedia('(hover: none)').matches;
-  if(!isTouch){
-    const cur = document.getElementById('cur');
-    const ring = document.getElementById('cur-ring');
-    if(cur && ring){
-      let mx=0,my=0,rx=0,ry=0;
-      document.addEventListener('mousemove',e=>{
-        mx=e.clientX; my=e.clientY;
-        cur.style.left=mx+'px'; cur.style.top=my+'px';
-      });
-      (function ar(){
-        rx+=(mx-rx)*.1; ry+=(my-ry)*.1;
-        ring.style.left=rx+'px'; ring.style.top=ry+'px';
-        requestAnimationFrame(ar);
-      })();
-      document.querySelectorAll('a,button,.pi,.bhc,[data-hover]').forEach(el=>{
-        el.addEventListener('mouseenter',()=>document.body.classList.add('h'));
-        el.addEventListener('mouseleave',()=>document.body.classList.remove('h'));
-      });
+  /* ---- Scramble utility ---- */
+  const SC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#%&';
+  function scramble(el, final, dur, cb) {
+    const len = final.length;
+    let t0 = null;
+    function frame(ts) {
+      if(!t0) t0 = ts;
+      const p = Math.min((ts - t0) / dur, 1);
+      let s = '';
+      for(let i = 0; i < len; i++) {
+        const c = final[i];
+        if(c === ' ' || c === "'" || c === '—' || c === '.' || c === ',') s += c;
+        else if(i < Math.floor(p * len * 1.35)) s += c;
+        else s += SC[Math.floor(Math.random() * SC.length)];
+      }
+      el.textContent = s;
+      if(p < 1) requestAnimationFrame(frame);
+      else { el.textContent = final; cb && cb(); }
     }
+    requestAnimationFrame(frame);
   }
 
+  /* ---- Hero title scramble on load ---- */
+  const heroTxt = document.getElementById('hero-center');
+  if(heroTxt) scramble(heroTxt, "LET'S WORK.", 800);
+
+  /* ---- Custom Cursor ---- */
+  const isTouch = window.matchMedia('(hover: none)').matches;
+  if(!isTouch) {
+    const cur  = document.getElementById('cur');
+    const ring = document.getElementById('cur-ring');
+    if(cur && ring) {
+      let mx=0, my=0, rx=0, ry=0;
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cur.style.left = mx+'px'; cur.style.top = my+'px';
+      });
+      (function ar(){
+        rx += (mx-rx)*.1; ry += (my-ry)*.1;
+        ring.style.left = rx+'px'; ring.style.top = ry+'px';
+        requestAnimationFrame(ar);
+      })();
+      document.querySelectorAll('a,button,.pi,.bhc,[data-hover]').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('h'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('h'));
+      });
+    }
+
+    /* ---- Nav hover scramble ---- */
+    document.querySelectorAll('.nr a').forEach(link => {
+      const orig = link.textContent;
+      link.addEventListener('mouseenter', () => scramble(link, orig, 380));
+    });
+
+    /* ---- Smooth lerp scroll ---- */
+    let targetY  = window.scrollY;
+    let currentY = window.scrollY;
+
+    window.addEventListener('wheel', e => {
+      e.preventDefault();
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      targetY = Math.max(0, Math.min(max, targetY + e.deltaY));
+    }, { passive: false });
+
+    // Anchor links: intercept and lerp
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const id = a.getAttribute('href').slice(1);
+        if(!id) return;
+        const dest = document.getElementById(id);
+        if(!dest) return;
+        e.preventDefault();
+        targetY = dest.getBoundingClientRect().top + window.scrollY;
+      });
+    });
+
+    function lerpTick() {
+      currentY += (targetY - currentY) * 0.09;
+      if(Math.abs(targetY - currentY) < 0.5) currentY = targetY;
+      window.scrollTo(0, currentY);
+      requestAnimationFrame(lerpTick);
+    }
+    requestAnimationFrame(lerpTick);
+  }
+
+
+  /* ---- Scroll Sequence Scrubbing ---- */
+  (function(){
+    const canvas  = document.getElementById('seq-canvas');
+    const section = document.getElementById('scroll-seq');
+    const botText = document.querySelector('.seq-text--bot');
+    if(!canvas || !section) return;
+
+    const ctx = canvas.getContext('2d');
+    const FRAME_COUNT = 61;
+    const FRAME_PATH  = 'assets/seq/frame_'; // ← dossier de tes frames
+    const FRAME_EXT   = '.jpg';       // ← '.jpg' ou '.webp'
+
+    // Resize canvas
+    function resize(){
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      drawFrame(currentFrame);
+    }
+    window.addEventListener('resize', resize);
+
+    // Preload frames
+    const frames = new Array(FRAME_COUNT);
+    let loaded = 0;
+    let currentFrame = 0;
+
+    function pad(n){ return String(n+1).padStart(4,'0'); }
+
+    for(let i = 0; i < FRAME_COUNT; i++){
+      const img = new Image();
+      img.src = FRAME_PATH + pad(i) + FRAME_EXT;
+      img.onload = () => {
+        loaded++;
+        if(loaded === 1) resize();
+        // jump to a mid-sequence frame once it's ready
+        if(i === 20 && currentFrame < 20) { currentFrame = 20; drawFrame(20); }
+      };
+      frames[i] = img;
+    }
+
+    function drawFrame(idx){
+      const img = frames[idx];
+      if(!img || !img.complete || !img.naturalWidth) return;
+      const cw = canvas.width, ch = canvas.height;
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const scale = Math.max(cw/iw, ch/ih);
+      const dw = iw*scale, dh = ih*scale;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, (cw-dw)/2, (ch-dh)/2, dw, dh);
+    }
+
+    let raf = null;
+    function onScroll(){
+      const top    = section.getBoundingClientRect().top + window.scrollY;
+      const height = section.offsetHeight - window.innerHeight;
+      const p      = Math.max(0, Math.min(1, (window.scrollY - top) / height));
+      const idx    = Math.min(FRAME_COUNT - 1, Math.floor(p * FRAME_COUNT));
+      if(idx !== currentFrame){
+        currentFrame = idx;
+        if(raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => drawFrame(currentFrame));
+      }
+      if(botText){
+        const show = p > 0.15 && p < 0.82;
+        botText.classList.toggle('visible', show);
+      }
+
+    }
+
+    resize();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  })();
+
   /* ---- Scroll Reveal ---- */
-  const obs = new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      if(e.isIntersecting){
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting) {
         e.target.classList.add('vis');
-        obs.unobserve(e.target);
+        revealObs.unobserve(e.target);
       }
     });
-  },{threshold:.08, rootMargin:'0px 0px -60px 0px'});
-  document.querySelectorAll('.rv').forEach((el,i)=>{
-    el.style.transitionDelay = (i%5)*.07+'s';
-    obs.observe(el);
+  }, { threshold: .08, rootMargin: '0px 0px -60px 0px' });
+
+  // Regular reveals (exclude pi & rv-h handled separately)
+  document.querySelectorAll('.rv').forEach((el, i) => {
+    if(el.classList.contains('pi') || el.classList.contains('rv-h')) return;
+    el.style.transitionDelay = (i % 5) * .07 + 's';
+    revealObs.observe(el);
   });
+
+  // Work grid: stagger by column (3-col layout)
+  document.querySelectorAll('.pi').forEach((el, i) => {
+    el.style.transitionDelay = (i % 3) * 0.08 + 's';
+    revealObs.observe(el);
+  });
+
+  // Big headings: no forced delay
+  document.querySelectorAll('.rv-h').forEach(el => revealObs.observe(el));
+
+
+  /* ---- Stats count-up ---- */
+  const statObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(!e.isIntersecting) return;
+      const el   = e.target;
+      const text = el.textContent.trim();
+      const isK  = text.endsWith('K');
+      const total = isK ? parseFloat(text) * 1000 : parseInt(text);
+      statObs.unobserve(el);
+      let t0 = null;
+      function tick(ts) {
+        if(!t0) t0 = ts;
+        const p    = Math.min((ts - t0) / 1500, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        const cur  = Math.round(ease * total);
+        el.textContent = isK ? Math.round(cur / 1000) + 'K' : cur;
+        if(p < 1) requestAnimationFrame(tick);
+        else el.textContent = text;
+      }
+      requestAnimationFrame(tick);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.asn').forEach(el => statObs.observe(el));
 
   /* ---- Page Transition ---- */
   const overlay = document.getElementById('page-transition');
   if(!overlay) return;
 
   let navigating = false;
-
-  function navigateTo(url){
+  function navigateTo(url) {
     if(navigating) return;
     navigating = true;
     overlay.classList.add('active');
-    setTimeout(()=>{ window.location.href = url; }, 420);
+    setTimeout(() => { window.location.href = url; }, 420);
   }
 
-  // Intercept all internal links
-  document.querySelectorAll('a[href]').forEach(link=>{
+  document.querySelectorAll('a[href]').forEach(link => {
     const href = link.getAttribute('href');
     if(!href) return;
-    // Skip anchors, external, mailto, tel
     if(href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') ||
        href.startsWith('http') || href.startsWith('//') || link.target === '_blank') return;
-    link.addEventListener('click',e=>{
-      e.preventDefault();
-      navigateTo(link.href);
-    });
+    link.addEventListener('click', e => { e.preventDefault(); navigateTo(link.href); });
   });
 
-  // Fade in on page load
-  window.addEventListener('pageshow',()=>{
-    overlay.style.transition = 'none';
-    overlay.classList.add('active');
-    requestAnimationFrame(()=>{
-      overlay.style.transition = 'opacity .4s ease';
-      requestAnimationFrame(()=>{ overlay.classList.remove('active'); navigating=false; });
-    });
+  window.addEventListener('pageshow', e => {
+    if(e.persisted) {
+      // back/forward cache: fade out the overlay
+      overlay.style.transition = 'none';
+      overlay.classList.add('active');
+      requestAnimationFrame(() => {
+        overlay.style.transition = 'opacity .4s ease';
+        requestAnimationFrame(() => { overlay.classList.remove('active'); navigating = false; });
+      });
+    } else {
+      overlay.classList.remove('active');
+      navigating = false;
+    }
   });
 
-  /* ---- Hero Scroll — instant 3D → video switch ---- */
-  const heroCanvas = document.getElementById('cv');
-  const heroVid    = document.querySelector('.hvid');
-  if(heroCanvas && heroVid){
-    heroCanvas.style.transition = 'opacity .35s ease';
-    heroVid.style.transition    = 'opacity .35s ease, transform .35s ease';
+  /* ---- Hero scroll — fade text on scroll ---- */
+  const heroVid = document.querySelector('.hvid');
+  if(heroVid) {
+    heroVid.style.transition = 'opacity .35s ease, transform .35s ease';
     let revealed = false;
-    window.addEventListener('scroll', ()=>{
-      if(window.scrollY > 40 && !revealed){
+    window.addEventListener('scroll', () => {
+      if(window.scrollY > 40 && !revealed) {
         revealed = true;
-        heroCanvas.style.opacity = '0';
-        heroVid.style.opacity    = '1';
-        heroVid.style.transform  = 'scale(1.06)';
-      } else if(window.scrollY <= 40 && revealed){
+        heroVid.style.opacity   = '1';
+        heroVid.style.transform = 'scale(1.06)';
+        if(heroTxt) heroTxt.style.opacity = '0';
+      } else if(window.scrollY <= 40 && revealed) {
         revealed = false;
-        heroCanvas.style.opacity = '1';
-        heroVid.style.opacity    = '0.18';
-        heroVid.style.transform  = 'scale(1)';
+        heroVid.style.opacity   = '0.18';
+        heroVid.style.transform = 'scale(1)';
+        if(heroTxt) heroTxt.style.opacity = '1';
       }
     }, { passive: true });
   }
 
   /* ---- Mobile Nav ---- */
-  const burger = document.querySelector('.nav-burger');
+  const burger     = document.querySelector('.nav-burger');
   const navOverlay = document.querySelector('.nav-overlay');
-  const closeBtn = document.querySelector('.nav-overlay-close');
-  if(burger && navOverlay){
-    burger.addEventListener('click',()=>navOverlay.classList.toggle('open'));
-    if(closeBtn) closeBtn.addEventListener('click',()=>navOverlay.classList.remove('open'));
-    navOverlay.querySelectorAll('a').forEach(a=>{
-      a.addEventListener('click',()=>navOverlay.classList.remove('open'));
+  const closeBtn   = document.querySelector('.nav-overlay-close');
+  if(burger && navOverlay) {
+    burger.addEventListener('click', () => navOverlay.classList.toggle('open'));
+    if(closeBtn) closeBtn.addEventListener('click', () => navOverlay.classList.remove('open'));
+    navOverlay.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navOverlay.classList.remove('open'));
     });
   }
 
