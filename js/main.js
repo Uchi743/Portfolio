@@ -31,56 +31,46 @@
   const heroTxt = document.getElementById('hero-center');
   if(heroTxt) scramble(heroTxt, "LET'S WORK.", 800);
 
-  /* ---- Custom Cursor + Smooth Scroll (desktop only, skip on low-end) ---- */
+  /* ---- Custom Cursor + Smooth Scroll (desktop only) ---- */
   const isTouch = window.matchMedia('(hover: none)').matches;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // FPS check: measure first 10 frames, disable effects if avg < 40fps
-  let fpsOk = null;
-  function checkFps(cb) {
-    let frames = 0, t0 = performance.now();
-    function tick(ts) {
-      frames++;
-      if(frames < 10) { requestAnimationFrame(tick); return; }
-      fpsOk = (frames / ((ts - t0) / 1000)) >= 40;
-      cb(fpsOk);
-    }
-    requestAnimationFrame(tick);
-  }
-
-  if(!isTouch && !reducedMotion) {
-    checkFps(function(ok) {
-      const cur  = document.getElementById('cur');
-      const ring = document.getElementById('cur-ring');
-      if(cur && ring) {
-        let mx=0, my=0, rx=0, ry=0;
-        // cursor dot always snaps instantly — no latency
-        document.addEventListener('mousemove', e => {
-          mx = e.clientX; my = e.clientY;
-          cur.style.left = mx+'px'; cur.style.top = my+'px';
-          if(!ok) { ring.style.left = mx+'px'; ring.style.top = my+'px'; }
-        });
-        if(ok) {
-          (function ar(){
-            rx += (mx-rx)*.18; ry += (my-ry)*.18;
-            ring.style.left = rx+'px'; ring.style.top = ry+'px';
-            requestAnimationFrame(ar);
-          })();
-        }
-        document.querySelectorAll('a,button,.pi,.bhc,[data-hover]').forEach(el => {
-          el.addEventListener('mouseenter', () => document.body.classList.add('h'));
-          el.addEventListener('mouseleave', () => document.body.classList.remove('h'));
-        });
-      }
-
-      /* ---- Nav hover scramble ---- */
-      document.querySelectorAll('.nr a').forEach(link => {
-        const orig = link.textContent;
-        link.addEventListener('mouseenter', () => scramble(link, orig, 380));
+  if(!isTouch) {
+    const cur  = document.getElementById('cur');
+    const ring = document.getElementById('cur-ring');
+    if(cur && ring) {
+      let mx=0, my=0, rx=0, ry=0;
+      document.addEventListener('mousemove', e => {
+        mx = e.clientX; my = e.clientY;
+        cur.style.left = mx+'px'; cur.style.top = my+'px';
       });
+      (function ar(){
+        rx += (mx-rx)*.15; ry += (my-ry)*.15;
+        ring.style.left = rx+'px'; ring.style.top = ry+'px';
+        requestAnimationFrame(ar);
+      })();
+      document.querySelectorAll('a,button,.pi,.bhc,[data-hover]').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('h'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('h'));
+      });
+    }
 
-      /* ---- Smooth lerp scroll (skip on low-end → native scroll) ---- */
-      if(!ok) return;
+    /* ---- Nav hover scramble ---- */
+    document.querySelectorAll('.nr a').forEach(link => {
+      const orig = link.textContent;
+      link.addEventListener('mouseenter', () => scramble(link, orig, 380));
+    });
+
+    /* ---- Smooth lerp scroll (désactivé si reduced motion ou perf faible) ---- */
+    if(!reducedMotion) (function(){
+
+    // Mesure FPS sur 10 frames avant d'activer le smooth scroll
+    let frames = 0, t0 = performance.now();
+    function fpsTick(ts) {
+      frames++;
+      if(frames < 10) { requestAnimationFrame(fpsTick); return; }
+      const fps = frames / ((ts - t0) / 1000);
+      if(fps < 40) return; // PC trop lent → scroll natif
 
       let targetY  = window.scrollY;
       let currentY = window.scrollY;
@@ -109,7 +99,9 @@
         requestAnimationFrame(lerpTick);
       }
       requestAnimationFrame(lerpTick);
-    });
+    }
+    requestAnimationFrame(fpsTick);
+    })();
   }
 
 
@@ -121,9 +113,10 @@
     if(!canvas || !section) return;
 
     const ctx = canvas.getContext('2d');
-    const FRAME_COUNT = 61;
-    const FRAME_PATH  = 'assets/seq/frame_'; // ← dossier de tes frames
-    const FRAME_EXT   = '.jpg';       // ← '.jpg' ou '.webp'
+    const FRAME_COUNT = parseInt(section.dataset.seqCount || '61');
+    const FRAME_PATH  = section.dataset.seqPath  || 'assets/seq/frame_';
+    const FRAME_EXT   = '.jpg';
+    const FIT         = section.dataset.seqFit   || 'cover'; // 'cover' ou 'contain'
 
     // Resize canvas
     function resize(){
@@ -157,7 +150,7 @@
       if(!img || !img.complete || !img.naturalWidth) return;
       const cw = canvas.width, ch = canvas.height;
       const iw = img.naturalWidth, ih = img.naturalHeight;
-      const scale = Math.max(cw/iw, ch/ih);
+      const scale = FIT === 'contain' ? Math.min(cw/iw, ch/ih) : Math.max(cw/iw, ch/ih);
       const dw = iw*scale, dh = ih*scale;
       ctx.clearRect(0, 0, cw, ch);
       ctx.drawImage(img, (cw-dw)/2, (ch-dh)/2, dw, dh);
