@@ -31,63 +31,85 @@
   const heroTxt = document.getElementById('hero-center');
   if(heroTxt) scramble(heroTxt, "LET'S WORK.", 800);
 
-  /* ---- Custom Cursor ---- */
+  /* ---- Custom Cursor + Smooth Scroll (desktop only, skip on low-end) ---- */
   const isTouch = window.matchMedia('(hover: none)').matches;
-  if(!isTouch) {
-    const cur  = document.getElementById('cur');
-    const ring = document.getElementById('cur-ring');
-    if(cur && ring) {
-      let mx=0, my=0, rx=0, ry=0;
-      document.addEventListener('mousemove', e => {
-        mx = e.clientX; my = e.clientY;
-        cur.style.left = mx+'px'; cur.style.top = my+'px';
-      });
-      (function ar(){
-        rx += (mx-rx)*.1; ry += (my-ry)*.1;
-        ring.style.left = rx+'px'; ring.style.top = ry+'px';
-        requestAnimationFrame(ar);
-      })();
-      document.querySelectorAll('a,button,.pi,.bhc,[data-hover]').forEach(el => {
-        el.addEventListener('mouseenter', () => document.body.classList.add('h'));
-        el.addEventListener('mouseleave', () => document.body.classList.remove('h'));
-      });
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // FPS check: measure first 10 frames, disable effects if avg < 40fps
+  let fpsOk = null;
+  function checkFps(cb) {
+    let frames = 0, t0 = performance.now();
+    function tick(ts) {
+      frames++;
+      if(frames < 10) { requestAnimationFrame(tick); return; }
+      fpsOk = (frames / ((ts - t0) / 1000)) >= 40;
+      cb(fpsOk);
     }
+    requestAnimationFrame(tick);
+  }
 
-    /* ---- Nav hover scramble ---- */
-    document.querySelectorAll('.nr a').forEach(link => {
-      const orig = link.textContent;
-      link.addEventListener('mouseenter', () => scramble(link, orig, 380));
-    });
+  if(!isTouch && !reducedMotion) {
+    checkFps(function(ok) {
+      const cur  = document.getElementById('cur');
+      const ring = document.getElementById('cur-ring');
+      if(cur && ring) {
+        let mx=0, my=0, rx=0, ry=0;
+        // cursor dot always snaps instantly — no latency
+        document.addEventListener('mousemove', e => {
+          mx = e.clientX; my = e.clientY;
+          cur.style.left = mx+'px'; cur.style.top = my+'px';
+          if(!ok) { ring.style.left = mx+'px'; ring.style.top = my+'px'; }
+        });
+        if(ok) {
+          (function ar(){
+            rx += (mx-rx)*.18; ry += (my-ry)*.18;
+            ring.style.left = rx+'px'; ring.style.top = ry+'px';
+            requestAnimationFrame(ar);
+          })();
+        }
+        document.querySelectorAll('a,button,.pi,.bhc,[data-hover]').forEach(el => {
+          el.addEventListener('mouseenter', () => document.body.classList.add('h'));
+          el.addEventListener('mouseleave', () => document.body.classList.remove('h'));
+        });
+      }
 
-    /* ---- Smooth lerp scroll ---- */
-    let targetY  = window.scrollY;
-    let currentY = window.scrollY;
+      /* ---- Nav hover scramble ---- */
+      document.querySelectorAll('.nr a').forEach(link => {
+        const orig = link.textContent;
+        link.addEventListener('mouseenter', () => scramble(link, orig, 380));
+      });
 
-    window.addEventListener('wheel', e => {
-      e.preventDefault();
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      targetY = Math.max(0, Math.min(max, targetY + e.deltaY));
-    }, { passive: false });
+      /* ---- Smooth lerp scroll (skip on low-end → native scroll) ---- */
+      if(!ok) return;
 
-    // Anchor links: intercept and lerp
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', e => {
-        const id = a.getAttribute('href').slice(1);
-        if(!id) return;
-        const dest = document.getElementById(id);
-        if(!dest) return;
+      let targetY  = window.scrollY;
+      let currentY = window.scrollY;
+
+      window.addEventListener('wheel', e => {
         e.preventDefault();
-        targetY = dest.getBoundingClientRect().top + window.scrollY;
-      });
-    });
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        targetY = Math.max(0, Math.min(max, targetY + e.deltaY));
+      }, { passive: false });
 
-    function lerpTick() {
-      currentY += (targetY - currentY) * 0.09;
-      if(Math.abs(targetY - currentY) < 0.5) currentY = targetY;
-      window.scrollTo(0, currentY);
+      document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+          const id = a.getAttribute('href').slice(1);
+          if(!id) return;
+          const dest = document.getElementById(id);
+          if(!dest) return;
+          e.preventDefault();
+          targetY = dest.getBoundingClientRect().top + window.scrollY;
+        });
+      });
+
+      function lerpTick() {
+        currentY += (targetY - currentY) * 0.11;
+        if(Math.abs(targetY - currentY) < 0.5) currentY = targetY;
+        window.scrollTo(0, currentY);
+        requestAnimationFrame(lerpTick);
+      }
       requestAnimationFrame(lerpTick);
-    }
-    requestAnimationFrame(lerpTick);
+    });
   }
 
 
