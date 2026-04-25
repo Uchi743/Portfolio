@@ -105,77 +105,37 @@
   }
 
 
-  /* ---- Scroll Sequence Scrubbing ---- */
+  /* ---- Scroll Sequence — Video Scrubbing ---- */
   (function(){
-    const canvas  = document.getElementById('seq-canvas');
+    const video   = document.getElementById('seq-video');
     const section = document.getElementById('scroll-seq');
     const botText = document.querySelector('.seq-text--bot');
-    if(!canvas || !section) return;
+    if(!video || !section) return;
 
-    const ctx = canvas.getContext('2d');
-    const FRAME_COUNT = parseInt(section.dataset.seqCount || '61');
-    const FRAME_PATH  = section.dataset.seqPath  || 'assets/seq/frame_';
-    const FRAME_EXT   = '.jpg';
-    const FIT         = section.dataset.seqFit   || 'cover'; // 'cover' ou 'contain'
+    video.pause();
 
-    // Resize canvas
-    function resize(){
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-      drawFrame(currentFrame);
-    }
-    window.addEventListener('resize', resize);
+    let targetTime = 0;
+    let isSeeking  = false;
 
-    // Preload frames
-    const frames = new Array(FRAME_COUNT);
-    let loaded = 0;
-    let currentFrame = 0;
-
-    function pad(n){ return String(n+1).padStart(4,'0'); }
-
-    for(let i = 0; i < FRAME_COUNT; i++){
-      const img = new Image();
-      img.src = FRAME_PATH + pad(i) + FRAME_EXT;
-      img.onload = () => {
-        loaded++;
-        if(loaded === 1) resize();
-        // jump to a mid-sequence frame once it's ready
-        if(i === 20 && currentFrame < 20) { currentFrame = 20; drawFrame(20); }
-      };
-      frames[i] = img;
+    function seek(){
+      if(!video.duration || isSeeking) return;
+      isSeeking = true;
+      video.currentTime = targetTime;
     }
 
-    function drawFrame(idx){
-      const img = frames[idx];
-      if(!img || !img.complete || !img.naturalWidth) return;
-      const cw = canvas.width, ch = canvas.height;
-      const iw = img.naturalWidth, ih = img.naturalHeight;
-      const scale = FIT === 'contain' ? Math.min(cw/iw, ch/ih) : Math.max(cw/iw, ch/ih);
-      const dw = iw*scale, dh = ih*scale;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, (cw-dw)/2, (ch-dh)/2, dw, dh);
-    }
+    video.addEventListener('seeked', () => {
+      isSeeking = false;
+      if(Math.abs(video.currentTime - targetTime) > 0.04) seek();
+    });
 
-    let raf = null;
-    function onScroll(){
+    window.addEventListener('scroll', () => {
       const top    = section.getBoundingClientRect().top + window.scrollY;
       const height = section.offsetHeight - window.innerHeight;
       const p      = Math.max(0, Math.min(1, (window.scrollY - top) / height));
-      const idx    = Math.min(FRAME_COUNT - 1, Math.floor(p * FRAME_COUNT));
-      if(idx !== currentFrame){
-        currentFrame = idx;
-        if(raf) cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => drawFrame(currentFrame));
-      }
-      if(botText){
-        const show = p > 0.15 && p < 0.82;
-        botText.classList.toggle('visible', show);
-      }
-
-    }
-
-    resize();
-    window.addEventListener('scroll', onScroll, { passive: true });
+      targetTime   = p * (video.duration || 0);
+      if(botText)  botText.classList.toggle('visible', p > 0.15 && p < 0.82);
+      seek();
+    }, { passive: true });
   })();
 
   /* ---- Scroll Reveal ---- */

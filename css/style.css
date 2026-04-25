@@ -146,14 +146,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content
 }
 
 /* ---- Scroll Sequence ---- */
-#scroll-seq{height:240vh;background:var(--black);position:relative}
+#scroll-seq{height:320vh;background:var(--black);position:relative}
 #seq-sticky{
   position:sticky;top:0;width:100%;height:100vh;
   overflow:hidden;display:flex;align-items:center;justify-content:center
 }
-#seq-canvas{
+#seq-video{
   position:absolute;inset:0;width:100%;height:100%;
-  object-fit:contain
+  object-fit:cover
 }
 .seq-text{position:absolute;z-index:5;pointer-events:none}
 .seq-text--top{top:9rem;left:5rem}
@@ -167,6 +167,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content
   transition:opacity .5s ease,transform .5s ease
 }
 .seq-text--bot.visible{opacity:1;transform:translateY(0)}
+.seq-btn{
+  display:inline-block;margin-top:2rem;
+  font-size:.52rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--white);text-decoration:none;
+  border:1px solid rgba(240,237,230,.45);
+  padding:.7rem 1.6rem;
+  pointer-events:auto;
+  transition:background .3s ease,color .3s ease,border-color .3s ease
+}
+.seq-btn:hover{background:var(--white);color:var(--black);border-color:var(--white)}
 .seq-title{
   font-family:var(--bebas);font-size:clamp(3rem,7vw,8rem);
   letter-spacing:.03em;line-height:.85;color:var(--white);
@@ -235,6 +245,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content
   transition:letter-spacing .5s cubic-bezier(.16,1,.3,1)
 }
 .wc:hover .wc-title{letter-spacing:.09em}
+.wc::after{
+  content:'View ↗';
+  position:absolute;bottom:1.4rem;right:1.4rem;z-index:10;
+  font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--white);border:1px solid rgba(240,237,230,.4);
+  padding:.55rem 1.1rem;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .35s ease,transform .4s cubic-bezier(.16,1,.3,1)
+}
+.wc:hover::after{opacity:1;transform:translateY(0)}
 .wc-tags{
   margin-top:.5rem;
   font-size:.48rem;letter-spacing:.22em;text-transform:uppercase;
