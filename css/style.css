@@ -13,7 +13,7 @@
   --sans:'Montserrat',sans-serif;
   --serif:'Montserrat',sans-serif
 }
-html{scroll-behavior:smooth;cursor:none}
+html{cursor:none}
 body{background:var(--black);color:var(--white);font-family:var(--sans);overflow-x:hidden}
 
 /* ---- Enhanced heading reveal ---- */

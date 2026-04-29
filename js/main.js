@@ -95,7 +95,7 @@
       function lerpTick() {
         currentY += (targetY - currentY) * 0.11;
         if(Math.abs(targetY - currentY) < 0.5) currentY = targetY;
-        window.scrollTo(0, currentY);
+        document.documentElement.scrollTop = currentY;
         requestAnimationFrame(lerpTick);
       }
       requestAnimationFrame(lerpTick);
