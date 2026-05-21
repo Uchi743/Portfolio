@@ -525,6 +525,7 @@
     const projects = [
       { href:'jean-paul-gaultier.html', name:'Jean Paul Gaultier', tags:'Cinematic · 3D · Luxury', media:'../assets/work/JEAN PAUL GAUTIER/preview_web.mp4' },
       { href:'ledger.html',             name:'Ledger',             tags:'Motion · 3D · Branding', media:'../assets/work/LEDGER/ledger_hero_web.mp4' },
+      { href:'vibram.html',             name:'Vibram Light ID',    tags:'Product · 3D · Lighting',media:'../assets/work/VIBRAM/3_web.mp4' },
       { href:'lgc-rising.html',         name:'LGC Rising',         tags:'Motion · 3D',            media:'../assets/work/lgc-rising/lgc_broadcast_web.mp4' },
       { href:'formule-1.html',          name:'Formule 1 3D',       tags:'CGI · Sport',            media:'../assets/work/formule 1/FORMULE1ROAD.DetailLightingOnly.mp4' },
       { href:'windows.html',            name:'Windows',            tags:'3D Motion',              media:'../assets/work/Windows/new_win_compressed.mp4' },
