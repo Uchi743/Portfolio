@@ -24,9 +24,9 @@ body{background:var(--black);color:var(--white);font-family:var(--sans);overflow
 }
 .rv-h.vis{transform:translateY(0) skewY(0deg)}
 
-/* ---- Cursor ---- */
-#cur{position:fixed;width:6px;height:6px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
-#cur-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(240,237,230,0.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .25s}
+/* ---- Cursor (GPU-accelerated, no layout) ---- */
+#cur{position:fixed;left:0;top:0;width:6px;height:6px;background:var(--white);border-radius:50%;pointer-events:none;z-index:9999;will-change:transform;transform:translate3d(-50%,-50%,0)}
+#cur-ring{position:fixed;left:0;top:0;width:32px;height:32px;border:1px solid rgba(240,237,230,0.45);border-radius:50%;pointer-events:none;z-index:9998;will-change:transform;transform:translate3d(-50%,-50%,0);transition:width .25s,height .25s,border-color .25s}
 body.h #cur-ring{width:52px;height:52px;border-color:rgba(240,237,230,0.9)}
 @media(hover:none){#cur,#cur-ring{display:none}html{cursor:auto}}
 
