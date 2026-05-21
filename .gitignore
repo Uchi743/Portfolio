@@ -3,3 +3,38 @@ Thumbs.db
 *.log
 node_modules/
 .env
+
+# Tooling / local config
+.claude/
+
+# Installers & binaries that don't belong in the repo
+*.exe
+*.avi
+
+# Source GIFs — MP4 conversions are checked in instead (Cloudflare size limits)
+assets/work/**/*.gif
+
+# Unreferenced source assets (kept locally only — compressed _web versions are tracked)
+assets/eye-scroll.mp4
+assets/eye-scroll-seekable_720p.mp4
+assets/reel.mp4
+assets/reel_hq_old.mp4
+assets/work/burberry/404c14ab-4791-421c-8eb6-fa82325787ea
+assets/work/Cardze/Teaser format base1.mp4
+assets/work/Cardze/format carré.mp4
+assets/work/Cardze/raffle.mp4
+assets/work/TRUCK/TESTT1.mp4
+assets/work/Valorant Omen cinematic/WALK_5.mp4
+assets/work/Windows/new win.mp4
+assets/work/burberry/burberry new.mp4
+assets/work/formule 1/PSD AFTER ECRAN 2.mp4
+assets/work/guerlain/1INSTADISLOQUE_2ssc.mp4
+assets/work/thermos/thermos.mp4
+assets/work/prada/PRADA TOP_DeMain.mp4
+assets/work/LEDGER/2026-05-16 16-21-26.mp4
+assets/work/lgc-rising/LGC_BROADCAST.mp4
+assets/work/apple/apple cable.mp4
+assets/work/apple/CLOSE UP 2.mp4
+assets/work/JEAN PAUL GAUTIER/Preview.mp4
+assets/work/JEAN PAUL GAUTIER/STAIRS_CASE.mp4
+

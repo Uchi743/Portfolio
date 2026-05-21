@@ -105,7 +105,81 @@
   }
 
 
-  /* ---- Scroll Sequence — Video Scrubbing ---- */
+  /* ---- Client logos: show text fallback if image fails to load ---- */
+  document.querySelectorAll('.clogo img').forEach(img => {
+    function failed(){ img.closest('.clogo')?.classList.add('img-failed'); }
+    if(img.complete && img.naturalWidth === 0) failed();
+    else {
+      img.addEventListener('error', failed);
+      img.addEventListener('load', () => {
+        if(img.naturalWidth === 0) failed();
+      });
+    }
+  });
+
+  /* ---- Nav: solid backdrop after scroll ---- */
+  (function(){
+    const nav = document.querySelector('nav');
+    if(!nav) return;
+    const update = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+  })();
+
+  /* ---- Work page hero text reveal (split letters, stagger up) ---- */
+  (function(){
+    const phTitle = document.querySelector('.ph-title');
+    const phTags  = document.querySelectorAll('.ph-tag');
+    const phYear  = document.querySelector('.ph-year');
+    if(!phTitle && !phYear && !phTags.length) return;
+
+    function splitLetters(el, baseDelay){
+      const lines = el.innerHTML.split(/<br\s*\/?>/i);
+      el.innerHTML = '';
+      lines.forEach((line, li) => {
+        // strip any inner tags, keep text only
+        const tmp = document.createElement('div');
+        tmp.innerHTML = line;
+        const text = tmp.textContent;
+
+        const lineEl = document.createElement('span');
+        lineEl.className = 'ph-tline';
+        [...text].forEach((ch, ci) => {
+          const sp = document.createElement('span');
+          sp.className = 'ph-tletter';
+          sp.textContent = (ch === ' ') ? ' ' : ch;
+          sp.style.animationDelay = (baseDelay + (li * 0.18) + (ci * 0.035)) + 's';
+          lineEl.appendChild(sp);
+        });
+        el.appendChild(lineEl);
+        if(li < lines.length - 1) el.appendChild(document.createElement('br'));
+      });
+    }
+
+    if(phTitle && !phTitle.dataset.split){
+      phTitle.dataset.split = '1';
+      splitLetters(phTitle, 0.15);
+    }
+
+    if(phTags.length){
+      phTags.forEach((tag, i) => {
+        tag.style.animationDelay = (0.05 + i * 0.08) + 's';
+        tag.classList.add('ph-tag--anim');
+      });
+    }
+
+    if(phYear){
+      phYear.style.animationDelay = '0.6s';
+      phYear.classList.add('ph-year--anim');
+    }
+
+    // trigger
+    requestAnimationFrame(() => {
+      if(phTitle) phTitle.classList.add('ph-in');
+    });
+  })();
+
+  /* ---- Scroll Sequence — Video Scrubbing (LGC Rising eye-scroll) ---- */
   (function(){
     const video   = document.getElementById('seq-video');
     const section = document.getElementById('scroll-seq');
@@ -136,6 +210,166 @@
       if(botText)  botText.classList.toggle('visible', p > 0.15 && p < 0.82);
       seek();
     }, { passive: true });
+  })();
+
+  /* ---- Featured carousel — auto-scroll, infinite, drag, arrows ---- */
+  (function(){
+    const track  = document.getElementById('fs-track');
+    if(!track) return;
+    const origCards = Array.from(track.children);
+    if(!origCards.length) return;
+
+    /* Split each title into staggered letter spans */
+    origCards.forEach(card => {
+      const t = card.querySelector('.fs-card-t');
+      if(!t || t.dataset.split === '1') return;
+      const text = t.textContent;
+      t.dataset.split = '1';
+      t.innerHTML = '';
+      const chars = [...text];
+      chars.forEach((ch, i) => {
+        const sp = document.createElement('span');
+        sp.className = 'fs-letter';
+        sp.textContent = (ch === ' ') ? ' ' : ch;
+        sp.style.transitionDelay = (i * 0.025) + 's';
+        t.appendChild(sp);
+      });
+    });
+
+    // Duplicate once for seamless wrap-around — clones keep autoplay+loop
+    origCards.forEach(c => {
+      const clone = c.cloneNode(true);
+      clone.dataset.clone = '1';
+      track.appendChild(clone);
+    });
+
+    // Force every video (originals + clones) to mute/loop/play.
+    // Cloned <video> nodes sometimes ignore the inline autoplay attribute,
+    // so we kick them off manually once they are ready.
+    track.querySelectorAll('video').forEach(v => {
+      v.muted = true;
+      v.loop  = true;
+      v.setAttribute('playsinline', '');
+      const tryPlay = () => { const p = v.play(); if(p && p.catch) p.catch(() => {}); };
+      if(v.readyState >= 2) tryPlay();
+      else v.addEventListener('loadeddata', tryPlay, { once: true });
+    });
+
+    const cards  = origCards;
+    const curEl  = document.getElementById('fs-cur');
+    const totEl  = document.getElementById('fs-tot');
+    const prev   = document.querySelector('.fs-arrow[data-dir="prev"]');
+    const next   = document.querySelector('.fs-arrow[data-dir="next"]');
+    const section = document.getElementById('featured');
+    if(totEl) totEl.textContent = String(cards.length).padStart(2, '0');
+
+    /* ── State ───────────────────────────────────────────────── */
+    const SPEED       = 0.5;
+    const PAUSE_MS    = 4000;
+    const DRAG_PX     = 5;
+    let onScreen   = true;
+    let pauseUntil = 0;
+    let hovered    = false;
+    let dragging   = false;
+    let dragMoved  = 0;
+    let suppressClick = false;
+
+    function bumpPause(){ pauseUntil = performance.now() + PAUSE_MS; }
+    function stepWidth(){
+      const c = cards[0];
+      if(!c) return 0;
+      const gap = parseFloat(getComputedStyle(track).gap) || 0;
+      return c.offsetWidth + gap;
+    }
+    function halfWidth(){ return track.scrollWidth / 2; }
+    function wrap(){
+      const h = halfWidth();
+      if(track.scrollLeft >= h) track.scrollLeft -= h;
+      else if(track.scrollLeft < 0) track.scrollLeft += h;
+    }
+
+    /* ── Auto-scroll loop ────────────────────────────────────── */
+    (function tick(){
+      requestAnimationFrame(tick);
+      if(!onScreen || hovered || dragging) return;
+      if(performance.now() < pauseUntil) return;
+      track.scrollLeft += SPEED;
+      wrap();
+    })();
+
+    /* ── Arrows ──────────────────────────────────────────────── */
+    function go(dir){
+      bumpPause();
+      track.scrollBy({ left: stepWidth() * dir, behavior: 'smooth' });
+    }
+    if(prev) prev.addEventListener('click', e => { e.preventDefault(); go(-1); });
+    if(next) next.addEventListener('click', e => { e.preventDefault(); go( 1); });
+
+    /* ── Counter ─────────────────────────────────────────────── */
+    function updateCounter(){
+      const w = stepWidth();
+      if(!w) return;
+      let i = Math.round(track.scrollLeft / w) % cards.length;
+      if(i < 0) i += cards.length;
+      if(curEl) curEl.textContent = String(i + 1).padStart(2, '0');
+    }
+    track.addEventListener('scroll', updateCounter, { passive: true });
+    window.addEventListener('resize',  updateCounter);
+    updateCounter();
+
+    /* ── Hover pause (only on cards, not whole section) ─────── */
+    // attach to live + cloned cards
+    track.querySelectorAll('.fs-card').forEach(card => {
+      card.addEventListener('mouseenter', () => { hovered = true; });
+      card.addEventListener('mouseleave', () => { hovered = false; bumpPause(); });
+    });
+
+    /* ── Drag-to-scroll, with click suppression on real drags ─ */
+    let startX = 0, startScroll = 0;
+    track.addEventListener('mousedown', e => {
+      if(e.target.closest('.fs-arrow')) return;  // let arrows handle their click
+      dragging  = true;
+      dragMoved = 0;
+      startX    = e.pageX;
+      startScroll = track.scrollLeft;
+      track.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      const dx = e.pageX - startX;
+      dragMoved = Math.abs(dx);
+      if(dragMoved > DRAG_PX){
+        e.preventDefault();
+        track.scrollLeft = startScroll - dx;
+        wrap();
+      }
+    });
+    window.addEventListener('mouseup', () => {
+      if(!dragging) return;
+      dragging = false;
+      track.style.cursor = '';
+      if(dragMoved > DRAG_PX){
+        suppressClick = true;
+        setTimeout(() => { suppressClick = false; }, 0);
+      }
+      bumpPause();
+    });
+    // Swallow any click that follows a real drag (so cards don't navigate)
+    track.addEventListener('click', e => {
+      if(suppressClick){ e.preventDefault(); e.stopPropagation(); }
+    }, { capture: true });
+
+    /* ── Touch ───────────────────────────────────────────────── */
+    track.addEventListener('touchstart', () => { hovered = true;  }, { passive: true });
+    track.addEventListener('touchend',   () => { hovered = false; bumpPause(); }, { passive: true });
+
+    /* ── Off-screen pause ────────────────────────────────────── */
+    if(section){
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { onScreen = e.isIntersecting; });
+      }, { rootMargin: '50px 0px' });
+      io.observe(section);
+    }
   })();
 
   /* ---- Scroll Reveal ---- */

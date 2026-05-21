@@ -6,23 +6,25 @@ Portfolio personnel de Léo Demont, Motion Designer & 3D Artist basé à Paris.
 
 ```
 portfolio/
-├── index.html                  # Home — grille des 14 projets
+├── index.html                  # Home — grille des 16 projets
 ├── about.html                  # À propos
 ├── contact.html                # Contact + formulaire
 ├── work/                       # Pages projet individuelles
-│   ├── apple.html
+│   ├── ledger.html
+│   ├── lgc-rising.html
+│   ├── formule-1.html
 │   ├── windows.html
 │   ├── burberry.html
 │   ├── oakley.html
 │   ├── guerlain.html
+│   ├── mbappe-nike.html
+│   ├── cardze.html
+│   ├── valorant-omen.html
 │   ├── vivienne-westwood-bag.html
+│   ├── apple.html
 │   ├── thermos.html
 │   ├── truck.html
 │   ├── prada.html
-│   ├── booba.html
-│   ├── vivienne-westwood-pearl.html
-│   ├── kame-house.html
-│   ├── capsule-corp.html
 │   └── michou.html
 ├── css/
 │   └── style.css
