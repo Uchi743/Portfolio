@@ -30,12 +30,14 @@ body{background:var(--black);color:var(--white);font-family:var(--sans);overflow
 body.h #cur-ring{width:52px;height:52px;border-color:rgba(240,237,230,0.9)}
 @media(hover:none){#cur,#cur-ring{display:none}html{cursor:auto}}
 
-/* ---- Page Transition ---- */
+/* ---- Page Transition (cinematic black crossfade) ---- */
 #page-transition{
   position:fixed;inset:0;background:var(--black);z-index:1000;
-  pointer-events:none;opacity:0;transition:opacity .4s ease
+  pointer-events:none;opacity:1;will-change:opacity;
+  animation:pt-in .55s cubic-bezier(.22,1,.36,1) forwards
 }
-#page-transition.active{opacity:1;pointer-events:all}
+@keyframes pt-in{from{opacity:1}to{opacity:0}}
+#page-transition.active{opacity:1;pointer-events:all;animation:none;transition:opacity .28s cubic-bezier(.4,0,.2,1)}
 
 /* ---- Nav ---- */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;justify-content:space-between;align-items:center;padding:1.4rem 5rem;background:linear-gradient(180deg,rgba(8,8,8,.85) 0%,rgba(8,8,8,.55) 70%,transparent 100%);backdrop-filter:blur(10px) saturate(1.2);-webkit-backdrop-filter:blur(10px) saturate(1.2);transition:background .4s ease,padding .35s ease}
