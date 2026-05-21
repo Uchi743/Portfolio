@@ -482,6 +482,161 @@
   }, { threshold: 0.5 });
   document.querySelectorAll('.asn').forEach(el => statObs.observe(el));
 
+  /* ---- Work pages: replace .pnav with a "More Work" carousel ---- */
+  (function(){
+    const pnav = document.querySelector('.pnav');
+    if(!pnav) return;
+    if(!window.location.pathname.includes('/work/')) return;
+
+    const projects = [
+      { href:'jean-paul-gaultier.html', name:'Jean Paul Gaultier', tags:'Cinematic · 3D · Luxury', media:'../assets/work/JEAN PAUL GAUTIER/preview_web.mp4' },
+      { href:'ledger.html',             name:'Ledger',             tags:'Motion · 3D · Branding', media:'../assets/work/LEDGER/ledger_hero_web.mp4' },
+      { href:'lgc-rising.html',         name:'LGC Rising',         tags:'Motion · 3D',            media:'../assets/work/lgc-rising/lgc_broadcast_web.mp4' },
+      { href:'formule-1.html',          name:'Formule 1 3D',       tags:'CGI · Sport',            media:'../assets/work/formule 1/FORMULE1ROAD.DetailLightingOnly.mp4' },
+      { href:'windows.html',            name:'Windows',            tags:'3D Motion',              media:'../assets/work/Windows/new_win_compressed.mp4' },
+      { href:'apple.html',              name:'Apple',              tags:'Motion · 3D',            media:'../assets/work/apple/apple_cable_web.mp4' },
+      { href:'burberry.html',           name:'Burberry',           tags:'Fashion · 3D',           media:'../assets/work/burberry/burberry_new.mp4' },
+      { href:'oakley.html',             name:'Oakley',             tags:'Sport · 3D',             media:'../assets/work/Oakley/oakley.mp4' },
+      { href:'guerlain.html',           name:'Guerlain',           tags:'Luxury · 3D',            media:'../assets/work/guerlain/1INSTADISLOQUE_2.mp4' },
+      { href:'mbappe-nike.html',        name:'Mbappé Nike',        tags:'Sport · Motion',         media:'../assets/work/MBAPPE nike/mbappe.mp4' },
+      { href:'cardze.html',             name:'Cardze',             tags:'Motion · Branding',      media:'../assets/work/Cardze/CLONER bis.mp4' },
+      { href:'valorant-omen.html',      name:'Valorant Omen',      tags:'Cinematic · CGI',        media:'../assets/work/Valorant Omen cinematic/walk_web.mp4' },
+      { href:'vivienne-westwood-bag.html', name:'Vivienne Westwood', tags:'Fashion · 3D',         media:'../assets/work/Vivienne westwood/gif1.mp4' },
+      { href:'thermos.html',            name:'Thermos',            tags:'Product · 3D',           media:'../assets/work/thermos/thermos_web.mp4' },
+      { href:'truck.html',              name:'Truck',              tags:'3D Motion',              media:'../assets/work/TRUCK/TESTT1_web.mp4' },
+      { href:'prada.html',              name:'Prada Monolith',     tags:'Fashion · 3D',           media:'../assets/work/prada/prada_top_web.mp4' }
+    ];
+
+    const currentFile = window.location.pathname.split('/').pop();
+    const others = projects.filter(p => p.href !== currentFile);
+
+    const section = document.createElement('section');
+    section.id = 'work-more';
+    section.className = 'work-more-sec';
+    section.innerHTML = `
+      <div class="fs-head">
+        <div class="slb fs-slb">More Work — Explore</div>
+        <div class="fs-nav">
+          <span class="fs-counter"><b id="wm-cur">01</b><i>/</i><span id="wm-tot">${String(others.length).padStart(2,'0')}</span></span>
+          <button class="fs-arrow" data-dir="prev" aria-label="Previous"><span class="fs-arrow-tip">←</span></button>
+          <button class="fs-arrow" data-dir="next" aria-label="Next"><span class="fs-arrow-tip">→</span></button>
+        </div>
+      </div>
+      <div class="fs-track" id="wm-track">
+        ${others.map((p, i) => `
+          <a class="fs-card" href="${p.href}">
+            <video class="fs-card-media" src="${p.media}" muted loop playsinline></video>
+            <div class="fs-card-info">
+              <span class="fs-card-tags">${p.tags}</span>
+              <span class="fs-card-t">${p.name}</span>
+              <span class="fs-card-cta">View case ↗</span>
+            </div>
+          </a>
+        `).join('')}
+      </div>
+    `;
+
+    pnav.parentNode.replaceChild(section, pnav);
+
+    // Init carousel logic (similar to home's)
+    const track  = section.querySelector('#wm-track');
+    const cards  = Array.from(track.children);
+    const curEl  = section.querySelector('#wm-cur');
+    const prev   = section.querySelector('.fs-arrow[data-dir="prev"]');
+    const next   = section.querySelector('.fs-arrow[data-dir="next"]');
+
+    // Split letters on card titles for the stagger hover effect
+    cards.forEach(card => {
+      const t = card.querySelector('.fs-card-t');
+      if(!t) return;
+      const text = t.textContent;
+      t.innerHTML = '';
+      [...text].forEach((ch, i) => {
+        const sp = document.createElement('span');
+        sp.className = 'fs-letter';
+        sp.textContent = (ch === ' ') ? ' ' : ch;
+        sp.style.transitionDelay = (i * 0.025) + 's';
+        t.appendChild(sp);
+      });
+    });
+
+    // Clone for seamless wrap
+    cards.forEach(c => {
+      const clone = c.cloneNode(true);
+      clone.dataset.clone = '1';
+      track.appendChild(clone);
+    });
+    track.querySelectorAll('video').forEach(v => {
+      v.muted = true; v.loop = true;
+      v.setAttribute('playsinline','');
+      const tryPlay = () => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); };
+      if(v.readyState >= 2) tryPlay();
+      else v.addEventListener('loadeddata', tryPlay, { once:true });
+    });
+
+    const SPEED = 0.5, PAUSE_MS = 4000, DRAG_PX = 5;
+    let onScreen = true, pauseUntil = 0, hovered = false, dragging = false, dragMoved = 0, suppressClick = false;
+    const bumpPause = () => { pauseUntil = performance.now() + PAUSE_MS; };
+    const stepWidth = () => { const c = cards[0]; if(!c) return 0; const gap = parseFloat(getComputedStyle(track).gap)||0; return c.offsetWidth + gap; };
+    const halfWidth = () => track.scrollWidth / 2;
+    const wrap = () => { const h = halfWidth(); if(track.scrollLeft >= h) track.scrollLeft -= h; else if(track.scrollLeft < 0) track.scrollLeft += h; };
+
+    (function tick(){
+      requestAnimationFrame(tick);
+      if(!onScreen || hovered || dragging) return;
+      if(performance.now() < pauseUntil) return;
+      track.scrollLeft += SPEED; wrap();
+    })();
+
+    function go(dir){ bumpPause(); track.scrollBy({ left: stepWidth() * dir, behavior: 'smooth' }); }
+    if(prev) prev.addEventListener('click', e => { e.preventDefault(); go(-1); });
+    if(next) next.addEventListener('click', e => { e.preventDefault(); go( 1); });
+
+    function updateCounter(){
+      const w = stepWidth(); if(!w) return;
+      let i = Math.round(track.scrollLeft / w) % cards.length;
+      if(i < 0) i += cards.length;
+      if(curEl) curEl.textContent = String(i + 1).padStart(2, '0');
+    }
+    track.addEventListener('scroll', updateCounter, { passive: true });
+    window.addEventListener('resize', updateCounter);
+    updateCounter();
+
+    track.querySelectorAll('.fs-card').forEach(card => {
+      card.addEventListener('mouseenter', () => { hovered = true;  });
+      card.addEventListener('mouseleave', () => { hovered = false; bumpPause(); });
+    });
+
+    let startX = 0, startScroll = 0;
+    track.addEventListener('mousedown', e => {
+      if(e.target.closest('.fs-arrow')) return;
+      dragging = true; dragMoved = 0;
+      startX = e.pageX; startScroll = track.scrollLeft;
+      track.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      const dx = e.pageX - startX;
+      dragMoved = Math.abs(dx);
+      if(dragMoved > DRAG_PX){ e.preventDefault(); track.scrollLeft = startScroll - dx; wrap(); }
+    });
+    window.addEventListener('mouseup', () => {
+      if(!dragging) return;
+      dragging = false; track.style.cursor = '';
+      if(dragMoved > DRAG_PX){ suppressClick = true; setTimeout(() => { suppressClick = false; }, 0); }
+      bumpPause();
+    });
+    track.addEventListener('click', e => { if(suppressClick){ e.preventDefault(); e.stopPropagation(); } }, { capture: true });
+
+    track.addEventListener('touchstart', () => { hovered = true;  }, { passive: true });
+    track.addEventListener('touchend',   () => { hovered = false; bumpPause(); }, { passive: true });
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { onScreen = e.isIntersecting; });
+    }, { rootMargin: '50px 0px' });
+    io.observe(section);
+  })();
+
   /* ---- Page Transition ---- */
   const overlay = document.getElementById('page-transition');
   if(!overlay) return;

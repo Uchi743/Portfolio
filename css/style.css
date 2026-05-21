@@ -1018,7 +1018,8 @@ footer{border-top:1px solid rgba(240,237,230,.07);padding:2rem 5rem;display:flex
 /* =========================================================
    FEATURED — horizontal project scroller (home)
    ========================================================= */
-#featured{
+#featured,
+.work-more-sec{
   padding:7rem 0 8rem;position:relative;
   background:
     radial-gradient(1100px 600px at 80% 0%, rgba(240,237,230,.025), transparent 70%),
@@ -1027,6 +1028,14 @@ footer{border-top:1px solid rgba(240,237,230,.07);padding:2rem 5rem;display:flex
 }
 #featured::before{
   content:'FEATURED · FEATURED · FEATURED · FEATURED · FEATURED · ';
+  position:absolute;top:1.4rem;left:0;right:0;
+  font-family:var(--bebas);font-size:.55rem;letter-spacing:.5em;
+  color:rgba(240,237,230,.08);white-space:nowrap;overflow:hidden;
+  pointer-events:none
+}
+.work-more-sec{margin-top:4rem;border-top:1px solid rgba(240,237,230,.06)}
+.work-more-sec::before{
+  content:'MORE WORK · MORE WORK · MORE WORK · MORE WORK · ';
   position:absolute;top:1.4rem;left:0;right:0;
   font-family:var(--bebas);font-size:.55rem;letter-spacing:.5em;
   color:rgba(240,237,230,.08);white-space:nowrap;overflow:hidden;
