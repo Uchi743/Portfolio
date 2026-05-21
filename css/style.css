@@ -227,6 +227,18 @@ nav.scrolled{background:rgba(8,8,8,.88);padding:1rem 5rem;border-bottom:1px soli
   filter:brightness(.75);
 }
 .wc:hover .wc-img{transform:scale(1.06);filter:brightness(.9)}
+.wc-vid{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;
+  opacity:0;z-index:1;pointer-events:none;
+  transition:opacity .35s ease;
+  filter:brightness(.85)
+}
+.wc:hover .wc-vid{opacity:1}
+/* Touch devices: video plays in place of the static image (no hover) */
+@media(hover:none){
+  .wc-vid.in-view{opacity:1}
+}
 .wc-info{
   position:absolute;inset:0;
   display:flex;flex-direction:column;justify-content:flex-end;
@@ -1162,6 +1174,62 @@ footer{border-top:1px solid rgba(240,237,230,.07);padding:2rem 5rem;display:flex
   .fs-card{width:88vw}
   .fs-arrow{width:44px;height:44px}
   .fs-foot{padding:1.4rem 1.5rem 0}
+}
+
+/* =========================================================
+   Mobile pass — extra fixes for sections added after the
+   original v1 media queries
+   ========================================================= */
+@media(max-width:768px){
+  /* Hero typo: tighten leading on small screens */
+  #hero-center{font-size:clamp(4.5rem,16vw,7rem);bottom:6rem}
+  .hero-eyebrow{font-size:.55rem;letter-spacing:.32em}
+  .hero-avail{font-size:.55rem}
+
+  /* Scroll-seq section is shorter on mobile (no scrub on touch anyway) */
+  #scroll-seq{height:100vh}
+  .seq-text--bot{bottom:2.5rem;left:1.5rem}
+  .seq-title{font-size:clamp(3rem,12vw,5rem)}
+
+  /* Marquee bridge — keep readable on small screens */
+  .marquee--bridge .marquee-track{font-size:.85rem;letter-spacing:.18em}
+
+  /* Featured carousel head: stack title above arrows on small screens */
+  .fs-head{align-items:flex-start;gap:1rem}
+  .fs-counter{min-width:auto;padding-right:.7rem}
+  .fs-counter b{font-size:1.4rem}
+
+  /* About teaser block (home) */
+  #about-teaser{padding:4rem 0 3rem}
+  .ats{flex-direction:column;align-items:flex-start;gap:1.6rem}
+  .ats-lede{font-size:clamp(1.25rem,5vw,1.8rem)}
+  .ats-cta{padding:.9rem 2rem;font-size:.75rem;letter-spacing:.24em}
+
+  /* Clients section: tighter spacing */
+  #clients{padding:3rem 0 4rem}
+  .clogo{aspect-ratio:5/2.4}
+
+  /* Contact section: smaller huge typo */
+  #contact{padding:6rem 1.5rem 4rem}
+  .ce{font-size:clamp(.95rem,4vw,1.3rem);word-break:break-word}
+  .clinks{flex-wrap:wrap;justify-content:center;gap:1rem 1.5rem;text-align:center}
+
+  /* About v5 hero on mobile — already responsive but tighten more */
+  .ax5-h1{font-size:clamp(3rem,13vw,5rem)}
+  .ax5-h1-line:nth-child(2),
+  .ax5-h1-line:nth-child(3){padding-left:0}
+
+  /* Work-page hero on mobile */
+  .ph-cover{height:auto;aspect-ratio:16/9}
+
+  /* Page transition on touch (avoid horizontal scrollbar) */
+  body{overflow-x:hidden;-webkit-overflow-scrolling:touch}
+}
+
+@media(max-width:480px){
+  .fs-card{width:92vw}
+  .ax5-skills{grid-template-columns:repeat(2,1fr) !important}
+  .ax5-tile-mark{font-size:clamp(2.4rem,9vw,3.2rem)}
 }
 
 /* =========================================================

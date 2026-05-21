@@ -117,6 +117,50 @@
     }
   });
 
+  /* ---- Work grid hover videos: lazy load + play on hover (desktop) or in-view (touch) ---- */
+  (function(){
+    const vids = document.querySelectorAll('.wc-vid[data-src]');
+    if(!vids.length) return;
+    const isTouch = window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches;
+
+    function load(v){
+      if(v.dataset.loaded) return;
+      v.dataset.loaded = '1';
+      v.src = v.dataset.src;
+    }
+    function play(v){
+      load(v);
+      v.muted = true;
+      v.setAttribute('playsinline', '');
+      const p = v.play();
+      if(p && p.catch) p.catch(() => {});
+    }
+
+    if(isTouch){
+      // Touch: autoplay each card video when it enters the viewport
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if(e.isIntersecting){
+            play(e.target);
+            e.target.classList.add('in-view');
+          } else {
+            e.target.pause();
+            e.target.classList.remove('in-view');
+          }
+        });
+      }, { threshold: 0.4 });
+      vids.forEach(v => io.observe(v));
+    } else {
+      // Desktop: load + play on hover, pause on leave
+      vids.forEach(v => {
+        const card = v.closest('.wc');
+        if(!card) return;
+        card.addEventListener('mouseenter', () => play(v));
+        card.addEventListener('mouseleave', () => { v.pause(); v.currentTime = 0; });
+      });
+    }
+  })();
+
   /* ---- Nav: solid backdrop after scroll ---- */
   (function(){
     const nav = document.querySelector('nav');
@@ -185,6 +229,21 @@
     const section = document.getElementById('scroll-seq');
     const botText = document.querySelector('.seq-text--bot');
     if(!video || !section) return;
+
+    // iOS Safari + most mobiles can't reliably seek <video> on scroll.
+    // Fall back to autoplay loop on touch devices.
+    const isTouch = window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches;
+    if(isTouch){
+      video.loop      = true;
+      video.muted     = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('autoplay', '');
+      const tryPlay = () => { const p = video.play(); if(p && p.catch) p.catch(()=>{}); };
+      if(video.readyState >= 2) tryPlay();
+      else video.addEventListener('loadeddata', tryPlay, { once: true });
+      if(botText) botText.classList.add('visible');
+      return;
+    }
 
     video.pause();
 
