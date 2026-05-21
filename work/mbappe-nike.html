@@ -79,42 +79,6 @@
     <video class="pg-img" src="../assets/work/MBAPPE nike/mbappe.mp4" autoplay muted loop playsinline></video>
   </div>
 
-  <div class="pg-spacer" style="height:3rem"></div>
-
-  <div class="pg-block pg-center">
-    <div class="slb" style="padding:0 0 1rem;color:rgba(240,237,230,.55)">Interactive 3D model</div>
-    <div id="sk-load" class="sk-loader"
-         data-src="https://sketchfab.com/models/a2faeabc09fd41e18d2d0f9044499b5c/embed?autospin=0.4&autostart=1&ui_theme=dark&ui_infos=0&ui_inspector=0&ui_stop=0&ui_watermark_link=0&transparent=0">
-      <div class="sk-loader-inner">
-        <div class="sk-loader-icon">⊕</div>
-        <div class="sk-loader-title">Load 3D model</div>
-        <div class="sk-loader-sub">Rigged Kylian Mbappé · Sketchfab · Drag · Zoom</div>
-      </div>
-    </div>
-  </div>
-  <script>
-  (function(){
-    const btn = document.getElementById('sk-load');
-    if(!btn) return;
-    btn.addEventListener('click', () => {
-      const iframe = document.createElement('iframe');
-      iframe.title = '3D rigged Kylian Mbappé';
-      iframe.allow = 'autoplay; fullscreen; xr-spatial-tracking';
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.setAttribute('mozallowfullscreen', 'true');
-      iframe.setAttribute('webkitallowfullscreen', 'true');
-      iframe.setAttribute('xr-spatial-tracking', '');
-      iframe.setAttribute('execution-while-out-of-viewport', '');
-      iframe.setAttribute('execution-while-not-rendered', '');
-      iframe.setAttribute('web-share', '');
-      iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
-      iframe.src = btn.dataset.src;
-      btn.innerHTML = '';
-      btn.appendChild(iframe);
-      btn.classList.add('loaded');
-    }, { once: true });
-  })();
-  </script>
 
 </div>
 
