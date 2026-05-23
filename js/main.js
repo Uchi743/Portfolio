@@ -144,6 +144,65 @@
     gvids.forEach(v => io.observe(v));
   })();
 
+  /* ---- Gallery / hero videos: click to toggle sound (mutes others) ---- */
+  (function(){
+    const vids = document.querySelectorAll('video.pg-img, video.ph-cover');
+    if(!vids.length) return;
+    const ICON_OFF = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+    const ICON_ON  = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
+    const entries = [];
+    vids.forEach(v => {
+      const wrap = document.createElement('div');
+      wrap.className = 'vid-snd';
+      if(v.classList.contains('ph-cover')) wrap.classList.add('vid-snd--cover');
+      v.parentNode.insertBefore(wrap, v);
+      wrap.appendChild(v);
+      const bar = document.createElement('div');
+      bar.className = 'vid-snd-bar';
+      const hint = document.createElement('span');
+      hint.className = 'vid-snd-hint';
+      hint.textContent = 'Cliquez pour activer le son';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'vid-snd-btn';
+      btn.setAttribute('aria-label', 'Activer le son');
+      btn.innerHTML = ICON_OFF + '<span class="vid-snd-lbl">Sound</span>';
+      bar.appendChild(hint);
+      bar.appendChild(btn);
+      wrap.appendChild(bar);
+      entries.push({ wrap, v, btn });
+    });
+    function activate(target){
+      entries.forEach(({ wrap, v, btn }) => {
+        if(v === target){
+          v.muted = false; v.volume = 0.8;
+          wrap.classList.add('snd-on');
+          btn.innerHTML = ICON_ON + '<span class="vid-snd-lbl">On</span>';
+          btn.setAttribute('aria-label', 'Couper le son');
+        } else {
+          v.muted = true;
+          wrap.classList.remove('snd-on');
+          btn.innerHTML = ICON_OFF + '<span class="vid-snd-lbl">Sound</span>';
+          btn.setAttribute('aria-label', 'Activer le son');
+        }
+        const p = v.play(); if(p && p.catch) p.catch(()=>{});
+      });
+    }
+    function mute(target, btn, wrap){
+      target.muted = true;
+      wrap.classList.remove('snd-on');
+      btn.innerHTML = ICON_OFF + '<span class="vid-snd-lbl">Sound</span>';
+      btn.setAttribute('aria-label', 'Activer le son');
+    }
+    entries.forEach(({ wrap, v, btn }) => {
+      wrap.addEventListener('click', e => {
+        e.preventDefault();
+        if(v.muted) activate(v);
+        else mute(v, btn, wrap);
+      });
+    });
+  })();
+
   /* ---- Work grid hover videos: lazy load + play on hover (desktop) or in-view (touch) ---- */
   (function(){
     const vids = document.querySelectorAll('.wc-vid[data-src]');
