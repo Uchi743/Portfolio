@@ -152,28 +152,16 @@
     }
 
     if(isTouch){
-      // Touch: autoplay each card video when it enters the viewport
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if(e.isIntersecting){
-            play(e.target);
-            e.target.classList.add('in-view');
-          } else {
-            e.target.pause();
-            e.target.classList.remove('in-view');
-          }
-        });
-      }, { threshold: 0.4 });
-      vids.forEach(v => io.observe(v));
-    } else {
-      // Desktop: load + play on hover, pause on leave
-      vids.forEach(v => {
-        const card = v.closest('.wc');
-        if(!card) return;
-        card.addEventListener('mouseenter', () => play(v));
-        card.addEventListener('mouseleave', () => { v.pause(); v.currentTime = 0; });
-      });
+      // Touch (mobile/iPad): no autoplay — show the static poster only (perf).
+      return;
     }
+    // Desktop: load + play on hover, pause on leave
+    vids.forEach(v => {
+      const card = v.closest('.wc');
+      if(!card) return;
+      card.addEventListener('mouseenter', () => play(v));
+      card.addEventListener('mouseleave', () => { v.pause(); v.currentTime = 0; });
+    });
   })();
 
   /* ---- Nav: solid backdrop after scroll (RAF-throttled) ---- */
@@ -305,26 +293,19 @@
       track.appendChild(clone);
     });
 
-    // Only the videos actually visible on screen play (originals + clones).
-    // A viewport IntersectionObserver also accounts for cards clipped by the
-    // track's horizontal scroll — so off-screen clones stay paused.
+    // No autoplay (perf): cards show a static poster and only play on hover.
     track.querySelectorAll('video').forEach(v => {
       v.muted = true;
       v.loop  = true;
+      v.removeAttribute('autoplay');
       v.setAttribute('playsinline', '');
     });
-    if('IntersectionObserver' in window){
-      const vio = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          const v = e.target;
-          if(e.isIntersecting){ const p = v.play(); if(p && p.catch) p.catch(()=>{}); }
-          else v.pause();
-        });
-      }, { threshold: 0.25 });
-      track.querySelectorAll('video').forEach(v => vio.observe(v));
-    } else {
-      track.querySelectorAll('video').forEach(v => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
-    }
+    track.querySelectorAll('.fs-card').forEach(card => {
+      const v = card.querySelector('video');
+      if(!v) return;
+      card.addEventListener('mouseenter', () => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
+      card.addEventListener('mouseleave', () => { v.pause(); });
+    });
 
     const cards  = origCards;
     const curEl  = document.getElementById('fs-cur');
@@ -538,7 +519,7 @@
       <div class="fs-track" id="wm-track">
         ${others.map((p, i) => `
           <a class="fs-card" href="${p.href}">
-            <video class="fs-card-media" src="${p.media}" muted loop playsinline></video>
+            <video class="fs-card-media" src="${p.media}" poster="${p.media.replace(/\.mp4$/, '.poster.jpg')}" muted loop playsinline preload="none"></video>
             <div class="fs-card-info">
               <span class="fs-card-tags">${p.tags}</span>
               <span class="fs-card-t">${p.name}</span>
@@ -581,20 +562,16 @@
     });
     track.querySelectorAll('video').forEach(v => {
       v.muted = true; v.loop = true;
+      v.removeAttribute('autoplay');
       v.setAttribute('playsinline','');
     });
-    if('IntersectionObserver' in window){
-      const vio = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          const v = e.target;
-          if(e.isIntersecting){ const p = v.play(); if(p && p.catch) p.catch(()=>{}); }
-          else v.pause();
-        });
-      }, { threshold: 0.25 });
-      track.querySelectorAll('video').forEach(v => vio.observe(v));
-    } else {
-      track.querySelectorAll('video').forEach(v => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
-    }
+    // No autoplay: play on hover only (static poster otherwise).
+    track.querySelectorAll('.fs-card').forEach(card => {
+      const v = card.querySelector('video');
+      if(!v) return;
+      card.addEventListener('mouseenter', () => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
+      card.addEventListener('mouseleave', () => { v.pause(); });
+    });
 
     const SPEED = 0.5, PAUSE_MS = 4000, DRAG_PX = 5;
     let onScreen = true, pauseUntil = 0, hovered = false, dragging = false, dragMoved = 0, suppressClick = false;
