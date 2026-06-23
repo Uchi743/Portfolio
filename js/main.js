@@ -340,14 +340,7 @@
       else if(track.scrollLeft < 0) track.scrollLeft += h;
     }
 
-    /* ── Auto-scroll loop ────────────────────────────────────── */
-    (function tick(){
-      requestAnimationFrame(tick);
-      if(!onScreen || hovered || dragging) return;
-      if(performance.now() < pauseUntil) return;
-      track.scrollLeft += SPEED;
-      wrap();
-    })();
+    /* ── Auto-scroll disabled — manual navigation only (arrows/drag) ── */
 
     /* ── Arrows ──────────────────────────────────────────────── */
     function go(dir){
@@ -580,12 +573,7 @@
     const halfWidth = () => track.scrollWidth / 2;
     const wrap = () => { const h = halfWidth(); if(track.scrollLeft >= h) track.scrollLeft -= h; else if(track.scrollLeft < 0) track.scrollLeft += h; };
 
-    (function tick(){
-      requestAnimationFrame(tick);
-      if(!onScreen || hovered || dragging) return;
-      if(performance.now() < pauseUntil) return;
-      track.scrollLeft += SPEED; wrap();
-    })();
+    /* Auto-scroll disabled — manual navigation only (arrows/drag) */
 
     function go(dir){ bumpPause(); track.scrollBy({ left: stepWidth() * dir, behavior: 'smooth' }); }
     if(prev) prev.addEventListener('click', e => { e.preventDefault(); go(-1); });
