@@ -1,5 +1,5 @@
 /* ===================================================
-   main.js — Cursor, scramble, smooth scroll, reveals
+   main.js — scramble, reveals, carousels, video
    =================================================== */
 
 (function(){
@@ -31,86 +31,15 @@
   const heroTxt = document.getElementById('hero-center');
   if(heroTxt) scramble(heroTxt, "LET'S WORK.", 800);
 
-  /* ---- Custom Cursor + Smooth Scroll (desktop only) ---- */
+  /* ---- Desktop-only enhancements ---- */
   const isTouch = window.matchMedia('(hover: none)').matches;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if(!isTouch) {
-    const cur  = document.getElementById('cur');
-    const ring = document.getElementById('cur-ring');
-    if(cur && ring) {
-      let mx=0, my=0, rx=0, ry=0, moving = false, raf = 0;
-      document.addEventListener('mousemove', e => {
-        mx = e.clientX; my = e.clientY;
-        cur.style.transform = `translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`;
-        moving = true;
-        if(!raf) raf = requestAnimationFrame(ar);
-      }, { passive: true });
-      function ar(){
-        rx += (mx-rx)*.18; ry += (my-ry)*.18;
-        ring.style.transform = `translate3d(${rx.toFixed(2)}px,${ry.toFixed(2)}px,0) translate(-50%,-50%)`;
-        if(Math.abs(mx-rx) < 0.4 && Math.abs(my-ry) < 0.4 && !moving){
-          raf = 0; return;
-        }
-        moving = false;
-        raf = requestAnimationFrame(ar);
-      }
-      // Delegated hover state — avoids attaching N listeners
-      document.addEventListener('mouseover', e => {
-        if(e.target.closest('a,button,.pi,.bhc,[data-hover]')) document.body.classList.add('h');
-      }, { passive: true });
-      document.addEventListener('mouseout', e => {
-        if(e.target.closest('a,button,.pi,.bhc,[data-hover]')) document.body.classList.remove('h');
-      }, { passive: true });
-    }
-
     /* ---- Nav hover scramble ---- */
     document.querySelectorAll('.nr a').forEach(link => {
       const orig = link.textContent;
       link.addEventListener('mouseenter', () => scramble(link, orig, 380));
     });
-
-    /* ---- Smooth lerp scroll (désactivé si reduced motion ou perf faible) ---- */
-    if(!reducedMotion) (function(){
-
-    // Mesure FPS sur 10 frames avant d'activer le smooth scroll
-    let frames = 0, t0 = performance.now();
-    function fpsTick(ts) {
-      frames++;
-      if(frames < 10) { requestAnimationFrame(fpsTick); return; }
-      const fps = frames / ((ts - t0) / 1000);
-      if(fps < 40) return; // PC trop lent → scroll natif
-
-      let targetY  = window.scrollY;
-      let currentY = window.scrollY;
-
-      window.addEventListener('wheel', e => {
-        e.preventDefault();
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        targetY = Math.max(0, Math.min(max, targetY + e.deltaY));
-      }, { passive: false });
-
-      document.querySelectorAll('a[href^="#"]').forEach(a => {
-        a.addEventListener('click', e => {
-          const id = a.getAttribute('href').slice(1);
-          if(!id) return;
-          const dest = document.getElementById(id);
-          if(!dest) return;
-          e.preventDefault();
-          targetY = dest.getBoundingClientRect().top + window.scrollY;
-        });
-      });
-
-      function lerpTick() {
-        currentY += (targetY - currentY) * 0.11;
-        if(Math.abs(targetY - currentY) < 0.5) currentY = targetY;
-        document.documentElement.scrollTop = currentY;
-        requestAnimationFrame(lerpTick);
-      }
-      requestAnimationFrame(lerpTick);
-    }
-    requestAnimationFrame(fpsTick);
-    })();
   }
 
 
@@ -161,11 +90,11 @@
       bar.className = 'vid-snd-bar';
       const hint = document.createElement('span');
       hint.className = 'vid-snd-hint';
-      hint.textContent = 'Cliquez pour activer le son';
+      hint.textContent = 'Click to unmute';
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'vid-snd-btn';
-      btn.setAttribute('aria-label', 'Activer le son');
+      btn.setAttribute('aria-label', 'Unmute');
       btn.innerHTML = ICON_OFF + '<span class="vid-snd-lbl">Sound</span>';
       bar.appendChild(hint);
       bar.appendChild(btn);
@@ -178,12 +107,12 @@
           v.muted = false; v.volume = 0.8;
           wrap.classList.add('snd-on');
           btn.innerHTML = ICON_ON + '<span class="vid-snd-lbl">On</span>';
-          btn.setAttribute('aria-label', 'Couper le son');
+          btn.setAttribute('aria-label', 'Mute');
         } else {
           v.muted = true;
           wrap.classList.remove('snd-on');
           btn.innerHTML = ICON_OFF + '<span class="vid-snd-lbl">Sound</span>';
-          btn.setAttribute('aria-label', 'Activer le son');
+          btn.setAttribute('aria-label', 'Unmute');
         }
         const p = v.play(); if(p && p.catch) p.catch(()=>{});
       });
@@ -192,7 +121,7 @@
       target.muted = true;
       wrap.classList.remove('snd-on');
       btn.innerHTML = ICON_OFF + '<span class="vid-snd-lbl">Sound</span>';
-      btn.setAttribute('aria-label', 'Activer le son');
+      btn.setAttribute('aria-label', 'Unmute');
     }
     entries.forEach(({ wrap, v, btn }) => {
       wrap.addEventListener('click', e => {
@@ -316,52 +245,33 @@
     });
   })();
 
-  /* ---- Scroll Sequence — Video Scrubbing (LGC Rising eye-scroll) ---- */
+  /* ---- Scroll Sequence — simple autoplay loop (scrubbing removed for perf) ---- */
   (function(){
     const video   = document.getElementById('seq-video');
     const section = document.getElementById('scroll-seq');
     const botText = document.querySelector('.seq-text--bot');
     if(!video || !section) return;
 
-    // iOS Safari + most mobiles can't reliably seek <video> on scroll.
-    // Fall back to autoplay loop on touch devices.
-    const isTouch = window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches;
-    if(isTouch){
-      video.loop      = true;
-      video.muted     = true;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('autoplay', '');
-      const tryPlay = () => { const p = video.play(); if(p && p.catch) p.catch(()=>{}); };
-      if(video.readyState >= 2) tryPlay();
-      else video.addEventListener('loadeddata', tryPlay, { once: true });
-      if(botText) botText.classList.add('visible');
-      return;
+    video.loop = true;
+    video.muted = true;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('autoplay', '');
+    if(botText) botText.classList.add('visible');
+
+    const tryPlay = () => { const p = video.play(); if(p && p.catch) p.catch(()=>{}); };
+
+    // Only play while the section is on screen (saves CPU/GPU + battery)
+    if('IntersectionObserver' in window){
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if(e.isIntersecting) tryPlay();
+          else video.pause();
+        });
+      }, { threshold: 0.1 });
+      io.observe(section);
+    } else {
+      tryPlay();
     }
-
-    video.pause();
-
-    let targetTime = 0;
-    let isSeeking  = false;
-
-    function seek(){
-      if(!video.duration || isSeeking) return;
-      isSeeking = true;
-      video.currentTime = targetTime;
-    }
-
-    video.addEventListener('seeked', () => {
-      isSeeking = false;
-      if(Math.abs(video.currentTime - targetTime) > 0.04) seek();
-    });
-
-    window.addEventListener('scroll', () => {
-      const top    = section.getBoundingClientRect().top + window.scrollY;
-      const height = section.offsetHeight - window.innerHeight;
-      const p      = Math.max(0, Math.min(1, (window.scrollY - top) / height));
-      targetTime   = p * (video.duration || 0);
-      if(botText)  botText.classList.toggle('visible', p > 0.15 && p < 0.82);
-      seek();
-    }, { passive: true });
   })();
 
   /* ---- Featured carousel — auto-scroll, infinite, drag, arrows ---- */
@@ -395,17 +305,26 @@
       track.appendChild(clone);
     });
 
-    // Force every video (originals + clones) to mute/loop/play.
-    // Cloned <video> nodes sometimes ignore the inline autoplay attribute,
-    // so we kick them off manually once they are ready.
+    // Only the videos actually visible on screen play (originals + clones).
+    // A viewport IntersectionObserver also accounts for cards clipped by the
+    // track's horizontal scroll — so off-screen clones stay paused.
     track.querySelectorAll('video').forEach(v => {
       v.muted = true;
       v.loop  = true;
       v.setAttribute('playsinline', '');
-      const tryPlay = () => { const p = v.play(); if(p && p.catch) p.catch(() => {}); };
-      if(v.readyState >= 2) tryPlay();
-      else v.addEventListener('loadeddata', tryPlay, { once: true });
     });
+    if('IntersectionObserver' in window){
+      const vio = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          const v = e.target;
+          if(e.isIntersecting){ const p = v.play(); if(p && p.catch) p.catch(()=>{}); }
+          else v.pause();
+        });
+      }, { threshold: 0.25 });
+      track.querySelectorAll('video').forEach(v => vio.observe(v));
+    } else {
+      track.querySelectorAll('video').forEach(v => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
+    }
 
     const cards  = origCards;
     const curEl  = document.getElementById('fs-cur');
@@ -586,7 +505,7 @@
       { href:'ledger.html',             name:'Ledger',             tags:'Motion · 3D · Branding', media:'../assets/work/LEDGER/ledger_hero_web.mp4' },
       { href:'vibram.html',             name:'Vibram Light ID',    tags:'Product · 3D · Lighting',media:'../assets/work/VIBRAM/3_web.mp4' },
       { href:'lgc-rising.html',         name:'LGC Rising',         tags:'Motion · 3D',            media:'../assets/work/lgc-rising/lgc_broadcast_web.mp4' },
-      { href:'formule-1.html',          name:'Formule 1 3D',       tags:'CGI · Sport',            media:'../assets/work/formule 1/FORMULE1ROAD.DetailLightingOnly.mp4' },
+      { href:'formule-1.html',          name:'Formula 1 3D',       tags:'CGI · Sport',            media:'../assets/work/formule 1/FORMULE1ROAD.DetailLightingOnly.mp4' },
       { href:'windows.html',            name:'Windows',            tags:'3D Motion',              media:'../assets/work/Windows/new_win_compressed.mp4' },
       { href:'apple.html',              name:'Apple',              tags:'Motion · 3D',            media:'../assets/work/apple/apple_cable_web.mp4' },
       { href:'burberry.html',           name:'Burberry',           tags:'Fashion · 3D',           media:'../assets/work/burberry/burberry_new.mp4' },
@@ -663,10 +582,19 @@
     track.querySelectorAll('video').forEach(v => {
       v.muted = true; v.loop = true;
       v.setAttribute('playsinline','');
-      const tryPlay = () => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); };
-      if(v.readyState >= 2) tryPlay();
-      else v.addEventListener('loadeddata', tryPlay, { once:true });
     });
+    if('IntersectionObserver' in window){
+      const vio = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          const v = e.target;
+          if(e.isIntersecting){ const p = v.play(); if(p && p.catch) p.catch(()=>{}); }
+          else v.pause();
+        });
+      }, { threshold: 0.25 });
+      track.querySelectorAll('video').forEach(v => vio.observe(v));
+    } else {
+      track.querySelectorAll('video').forEach(v => { const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
+    }
 
     const SPEED = 0.5, PAUSE_MS = 4000, DRAG_PX = 5;
     let onScreen = true, pauseUntil = 0, hovered = false, dragging = false, dragMoved = 0, suppressClick = false;
