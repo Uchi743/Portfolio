@@ -1,0 +1,10 @@
+# Cloudflare Pages cache rules
+# HTML: always revalidate so content/version changes show immediately
+/*
+  Cache-Control: public, max-age=31536000
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
