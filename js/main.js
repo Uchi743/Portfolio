@@ -475,23 +475,23 @@
     if(!window.location.pathname.includes('/work/')) return;
 
     const projects = [
-      { href:'jean-paul-gaultier.html', name:'Jean Paul Gaultier', tags:'Cinematic · 3D · Luxury', media:'../assets/work/JEAN PAUL GAUTIER/preview_web.mp4' },
-      { href:'ledger.html',             name:'Ledger',             tags:'Motion · 3D · Branding', media:'../assets/work/LEDGER/ledger_hero_web.mp4' },
-      { href:'vibram.html',             name:'Vibram Light ID',    tags:'Product · 3D · Lighting',media:'../assets/work/VIBRAM/3_web.mp4' },
-      { href:'lgc-rising.html',         name:'LGC Rising',         tags:'Motion · 3D',            media:'../assets/work/lgc-rising/lgc_broadcast_web.mp4' },
-      { href:'formule-1.html',          name:'Formula 1 3D',       tags:'CGI · Sport',            media:'../assets/work/formule 1/FORMULE1ROAD.DetailLightingOnly.mp4' },
-      { href:'windows.html',            name:'Windows',            tags:'3D Motion',              media:'../assets/work/Windows/new_win_compressed.mp4' },
-      { href:'apple.html',              name:'Apple',              tags:'Motion · 3D',            media:'../assets/work/apple/apple_cable_web.mp4' },
-      { href:'burberry.html',           name:'Burberry',           tags:'Fashion · 3D',           media:'../assets/work/burberry/burberry_new.mp4' },
-      { href:'oakley.html',             name:'Oakley',             tags:'Sport · 3D',             media:'../assets/work/Oakley/oakley.mp4' },
-      { href:'guerlain.html',           name:'Guerlain',           tags:'Luxury · 3D',            media:'../assets/work/guerlain/1INSTADISLOQUE_2.mp4' },
-      { href:'mbappe-nike.html',        name:'Mbappé Nike',        tags:'Sport · Motion',         media:'../assets/work/MBAPPE nike/mbappe.mp4' },
-      { href:'cardze.html',             name:'Cardze',             tags:'Motion · Branding',      media:'../assets/work/Cardze/CLONER bis.mp4' },
-      { href:'valorant-omen.html',      name:'Valorant Omen',      tags:'Cinematic · CGI',        media:'../assets/work/Valorant Omen cinematic/walk_web.mp4' },
-      { href:'vivienne-westwood-bag.html', name:'Vivienne Westwood', tags:'Fashion · 3D',         media:'../assets/work/Vivienne westwood/gif1.mp4' },
-      { href:'thermos.html',            name:'Thermos',            tags:'Product · 3D',           media:'../assets/work/thermos/thermos_web.mp4' },
-      { href:'truck.html',              name:'Truck',              tags:'3D Motion',              media:'../assets/work/TRUCK/TESTT1_web.mp4' },
-      { href:'prada.html',              name:'Prada Monolith',     tags:'Fashion · 3D',           media:'../assets/work/prada/prada_top_web.mp4' }
+      { href:'jean-paul-gaultier.html', name:'Jean Paul Gaultier', tags:'Cinematic · 3D · Luxury', media:'../assets/work/JEAN PAUL GAUTIER/preview_web.mp4?v=3' },
+      { href:'ledger.html',             name:'Ledger',             tags:'Motion · 3D · Branding', media:'../assets/work/LEDGER/ledger_hero_web.mp4?v=3' },
+      { href:'vibram.html',             name:'Vibram Light ID',    tags:'Product · 3D · Lighting',media:'../assets/work/VIBRAM/3_web.mp4?v=3' },
+      { href:'lgc-rising.html',         name:'LGC Rising',         tags:'Motion · 3D',            media:'../assets/work/lgc-rising/lgc_broadcast_web.mp4?v=3' },
+      { href:'formule-1.html',          name:'Formula 1 3D',       tags:'CGI · Sport',            media:'../assets/work/formule 1/FORMULE1ROAD.DetailLightingOnly.mp4?v=3' },
+      { href:'windows.html',            name:'Windows',            tags:'3D Motion',              media:'../assets/work/Windows/new_win_compressed.mp4?v=3' },
+      { href:'apple.html',              name:'Apple',              tags:'Motion · 3D',            media:'../assets/work/apple/apple_cable_web.mp4?v=3' },
+      { href:'burberry.html',           name:'Burberry',           tags:'Fashion · 3D',           media:'../assets/work/burberry/burberry_new.mp4?v=3' },
+      { href:'oakley.html',             name:'Oakley',             tags:'Sport · 3D',             media:'../assets/work/Oakley/oakley.mp4?v=3' },
+      { href:'guerlain.html',           name:'Guerlain',           tags:'Luxury · 3D',            media:'../assets/work/guerlain/1INSTADISLOQUE_2.mp4?v=3' },
+      { href:'mbappe-nike.html',        name:'Mbappé Nike',        tags:'Sport · Motion',         media:'../assets/work/MBAPPE nike/mbappe.mp4?v=3' },
+      { href:'cardze.html',             name:'Cardze',             tags:'Motion · Branding',      media:'../assets/work/Cardze/CLONER bis.mp4?v=3' },
+      { href:'valorant-omen.html',      name:'Valorant Omen',      tags:'Cinematic · CGI',        media:'../assets/work/Valorant Omen cinematic/walk_web.mp4?v=3' },
+      { href:'vivienne-westwood-bag.html', name:'Vivienne Westwood', tags:'Fashion · 3D',         media:'../assets/work/Vivienne westwood/gif1.mp4?v=3' },
+      { href:'thermos.html',            name:'Thermos',            tags:'Product · 3D',           media:'../assets/work/thermos/thermos_web.mp4?v=3' },
+      { href:'truck.html',              name:'Truck',              tags:'3D Motion',              media:'../assets/work/TRUCK/TESTT1_web.mp4?v=3' },
+      { href:'prada.html',              name:'Prada Monolith',     tags:'Fashion · 3D',           media:'../assets/work/prada/prada_top_web.mp4?v=3' }
     ];
 
     // Curated still frames (same covers as the home grid) used as poster images
