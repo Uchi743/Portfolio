@@ -494,6 +494,28 @@
       { href:'prada.html',              name:'Prada Monolith',     tags:'Fashion · 3D',           media:'../assets/work/prada/prada_top_web.mp4' }
     ];
 
+    // Curated still frames (same covers as the home grid) used as poster images
+    const covers = {
+      'jean-paul-gaultier.html':'../assets/work/JEAN PAUL GAUTIER/cover.jpg',
+      'ledger.html':'../assets/work/LEDGER/IMAGE/1.png',
+      'vibram.html':'../assets/work/VIBRAM/light_id_web.jpg',
+      'lgc-rising.html':'../assets/work/lgc-rising/cover.jpg',
+      'formule-1.html':'../assets/work/formule 1/cover.jpg',
+      'windows.html':'../assets/work/Windows/f3d4f822-114f-44f5-860e-eaa4bee86b0c_rw_1920.webp',
+      'apple.html':'../assets/work/apple/cover.jpg',
+      'burberry.html':'../assets/work/burberry/fc68d6eb-bfdf-4da8-ac81-b415e9d67115_rw_600.png',
+      'oakley.html':'../assets/work/Oakley/1.webp',
+      'guerlain.html':'../assets/work/guerlain/frame1.jpg',
+      'mbappe-nike.html':'../assets/work/MBAPPE nike/cover.jpg',
+      'cardze.html':'../assets/work/Cardze/cover.jpg',
+      'valorant-omen.html':'../assets/work/Valorant Omen cinematic/cover.jpg',
+      'vivienne-westwood-bag.html':'../assets/work/Vivienne westwood/11.webp',
+      'thermos.html':'../assets/work/thermos/rendericer_Main_0021.webp',
+      'truck.html':'../assets/work/TRUCK/cover.jpg',
+      'prada.html':'../assets/work/prada/d3fabd1e-9166-4707-82e6-76c2b685b7fc_rw_1920.jpg',
+      'salomon.html':'../assets/work/SALOMON/frame-01.jpg'
+    };
+
     const currentFile = window.location.pathname.split('/').pop();
     const others = projects.filter(p => p.href !== currentFile);
 
@@ -512,7 +534,7 @@
       <div class="fs-track" id="wm-track">
         ${others.map((p, i) => `
           <a class="fs-card" href="${p.href}">
-            <video class="fs-card-media" src="${p.media}" poster="${p.media.replace(/\.mp4$/, '.poster.jpg')}" muted loop playsinline preload="none"></video>
+            <video class="fs-card-media" src="${p.media}" poster="${covers[p.href] || p.media.replace(/\.mp4$/, '.poster.jpg')}" muted loop playsinline preload="none"></video>
             <div class="fs-card-info">
               <span class="fs-card-tags">${p.tags}</span>
               <span class="fs-card-t">${p.name}</span>
