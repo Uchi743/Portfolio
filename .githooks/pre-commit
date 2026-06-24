@@ -1,0 +1,8 @@
+#!/bin/sh
+# Auto cache-bust: when any asset (css/js/img/video) is part of this commit,
+# re-stamp ?v=N on all asset URLs so visitors fetch the new files.
+if git diff --cached --name-only | grep -qiE '\.(css|js|png|jpe?g|webp|svg|mp4)$'; then
+  echo "[pre-commit] asset change detected -> bumping cache version..."
+  python bump-cache.py 2>/dev/null || py bump-cache.py 2>/dev/null || python3 bump-cache.py
+  git add -- '*.html' 'work/*.html' 'js/*.js'
+fi
